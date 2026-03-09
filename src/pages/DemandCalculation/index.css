@@ -1,0 +1,411 @@
+.demand-calculation {
+  width: 100%;
+  background: #fff;
+  height: calc(100vh - 64px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 产品分类导航和筛选 */
+.category-filter-bar {
+  padding: 0 24px;
+  background: #fff;
+}
+
+.view-tabs {
+  margin-bottom: 0;
+  padding: 12px 0;
+  border-top: 1px solid #e8e8e8;
+  border-bottom: 1px solid #e8e8e8;
+  position: relative;
+}
+
+.view-tab {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  font-size: 14px;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+  border-radius: 16px;
+}
+
+.view-tab.active {
+  background: rgba(2, 185, 128, 0.1);
+  color: #02b980;
+  font-weight: 500;
+  position: relative;
+}
+
+.view-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -13px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #02b980;
+  z-index: 1;
+}
+
+.view-tab:hover:not(.active) {
+  color: #1890ff;
+}
+
+.category-tabs {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  gap: 8px;
+}
+
+.category-tab {
+  display: inline-block;
+  padding: 4px 12px;
+  font-size: 14px;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.category-tab.active {
+  background: rgba(2, 185, 128, 0.1);
+  border-radius: 16px;
+  color: #02b980;
+  font-weight: 500;
+}
+
+.category-tab:hover:not(.active) {
+  color: #1890ff;
+}
+
+/* 查询按钮样式优化 */
+.query-button {
+  padding: 0 12px !important;
+  height: 28px;
+}
+
+.query-button .anticon {
+  margin-right: 0 !important;
+}
+
+/* 搜索和筛选：单行布局，与需求计划一致 */
+.search-filter-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0 16px;
+  padding: 8px 24px;
+  background: #fff;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.search-filter-bar .search-filter-items {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  gap: 12px 20px;
+}
+
+.search-filter-bar .search-filter-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.search-filter-bar .search-filter-label {
+  font-weight: 500;
+  color: #333;
+  flex-shrink: 0;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.search-filter-bar .search-filter-input-wrap {
+  width: 140px;
+  flex-shrink: 0;
+}
+
+.search-filter-bar .search-filter-input-wrap .ant-input,
+.search-filter-bar .search-filter-input-wrap .ant-input-affix-wrapper {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.search-filter-bar .search-filter-select-wrap {
+  width: 96px;
+  flex-shrink: 0;
+}
+
+.search-filter-bar .search-filter-select-wrap .ant-select {
+  width: 100%;
+}
+
+.search-filter-bar .search-filter-select-wrap .ant-select .ant-select-selector {
+  width: 100%;
+  box-sizing: border-box;
+  padding-right: 24px;
+}
+
+.search-filter-bar .search-filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* 数据表格操作工具栏 */
+.table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 24px;
+  background: #fff;
+  margin: 0;
+}
+
+.table-toolbar .toolbar-buttons {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.table-toolbar .toolbar-batch-left {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.table-toolbar .toolbar-batch-left .selected-count {
+  margin-right: 12px;
+}
+
+.table-toolbar .toolbar-batch-left > .ant-btn:not([type="text"]) {
+  margin-right: 16px;
+}
+
+.table-toolbar .toolbar-cancel-select {
+  margin-left: auto;
+  color: #8c8c8c;
+  flex-shrink: 0;
+}
+
+.table-toolbar .toolbar-cancel-select:hover {
+  color: #1890ff;
+}
+
+.table-toolbar .selected-count {
+  margin-right: 12px;
+  color: #666;
+  font-size: 14px;
+}
+
+.table-toolbar .toolbar-buttons > .ant-btn:not([type="text"]) {
+  margin-right: 16px;
+}
+
+.table-toolbar .toolbar-buttons > .ant-btn-primary {
+  color: #fff !important;
+}
+
+.table-toolbar .toolbar-buttons > .ant-btn-primary:hover {
+  color: #fff !important;
+}
+
+.table-toolbar .toolbar-buttons > .ant-btn:not([type="text"]):last-child {
+  margin-right: 0;
+}
+
+/* 导入按钮在分隔符前，减少右边距 */
+.table-toolbar .toolbar-buttons > .ant-btn:nth-child(3):not([type="text"]) {
+  margin-right: 8px;
+}
+
+.table-toolbar .toolbar-separator {
+  width: 1px;
+  height: 16px;
+  background: #e8e8e8;
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+.table-toolbar .toolbar-buttons > .ant-btn[type="text"] {
+  padding: 2px 2px !important;
+  margin-right: 2px !important;
+}
+
+.table-toolbar .toolbar-buttons > .ant-btn[type="text"]:last-of-type {
+  margin-right: 0 !important;
+}
+
+.table-toolbar .ant-btn-link {
+  padding: 0;
+  height: auto;
+}
+
+.main-table-card {
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.main-table-card .ant-card-body {
+  padding: 8px 24px 16px 24px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.main-table-card .ant-table-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.main-table-card .ant-table-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.main-table-card .ant-spin-nested-loading {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.main-table-card .ant-spin-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.main-table-card .ant-table {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.main-table-card .ant-table-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.main-table-card .ant-table-body {
+  flex: 1;
+  overflow: auto !important;
+}
+
+/* 需求计算表头单行展示，与需求计划一致 */
+.demand-calculation .ant-table-thead > tr > th {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.demand-calculation .ant-table-tbody > tr > td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 0;
+}
+
+/* 表格样式优化 */
+.ant-table-small .ant-table-thead > tr > th {
+  background: #fafafa;
+  font-weight: 600;
+}
+
+.demand-calculation .ant-table-tbody > tr:hover > td {
+  background: #f5f5f5;
+}
+
+/* 确保表格行不可点击 */
+.demand-calculation .ant-table-tbody > tr {
+  cursor: default !important;
+  pointer-events: auto !important;
+}
+
+.demand-calculation .ant-table-tbody > tr:hover {
+  background-color: #fafafa !important;
+}
+
+.demand-calculation .ant-table-tbody > tr > td {
+  cursor: default !important;
+  user-select: text;
+}
+
+/* 确保复选框区域可以点击，但行本身不可点击 */
+.demand-calculation .ant-table-tbody > tr .ant-checkbox-wrapper {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+/* 多层表头样式 */
+.ant-table-thead > tr > th {
+  text-align: center;
+}
+
+.ant-table-thead > tr > th[colspan] {
+  text-align: center;
+}
+
+
+/* 列宽拖拽调整样式 */
+.react-resizable-handle {
+  position: absolute;
+  right: -5px;
+  bottom: 0;
+  top: 0;
+  width: 10px;
+  cursor: col-resize;
+  z-index: 1;
+  background: transparent !important;
+  border: none !important;
+  opacity: 0 !important;
+}
+
+.react-resizable-handle::before,
+.react-resizable-handle::after {
+  display: none !important;
+  content: none !important;
+  visibility: hidden !important;
+}
+
+.ant-table-thead > tr > th {
+  position: relative;
+}
+
+.ant-table-thead > tr > th:hover .react-resizable-handle {
+  opacity: 0 !important;
+}
+

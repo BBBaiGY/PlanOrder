@@ -1,0 +1,433 @@
+.material-control-workbench {
+  width: 100%;
+  background: #fff;
+  height: calc(100vh - 64px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 产品分类导航和筛选 */
+.category-filter-bar {
+  padding: 0 24px;
+  background: #fff;
+}
+
+.view-tabs {
+  margin-bottom: 0;
+  padding: 12px 0;
+  border-top: 1px solid #e8e8e8;
+  border-bottom: 1px solid #e8e8e8;
+  position: relative;
+}
+
+.view-tab {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  font-size: 14px;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+  border-radius: 16px;
+}
+
+.view-tab.active {
+  background: rgba(2, 185, 128, 0.1);
+  color: #02b980;
+  font-weight: 500;
+  position: relative;
+}
+
+.view-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -13px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #02b980;
+  z-index: 1;
+}
+
+.view-tab:hover:not(.active) {
+  color: #1890ff;
+}
+
+.category-tabs {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+}
+
+.category-tab {
+  display: inline-block;
+  padding: 4px 12px;
+  font-size: 14px;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.category-tab.active {
+  background: rgba(2, 185, 128, 0.1);
+  border-radius: 16px;
+  color: #02b980;
+  font-weight: 500;
+}
+
+.category-tab:hover:not(.active) {
+  color: #1890ff;
+}
+
+/* 查询按钮样式优化 */
+.query-button {
+  padding: 0 12px !important;
+  height: 28px;
+}
+
+.query-button .anticon {
+  margin-right: 0 !important;
+}
+
+/* 搜索和筛选输入栏 */
+.search-filter-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0 16px;
+  padding: 8px 24px;
+  background: #fff;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.search-filter-bar .search-filter-items {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  gap: 12px 20px;
+}
+
+.search-filter-bar .search-filter-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.search-filter-bar strong {
+  font-weight: 500;
+  color: #333;
+  font-size: 13px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.search-filter-bar .search-filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* 数据表格操作工具栏 */
+.table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 24px;
+  background: #fff;
+  margin: 0;
+}
+
+.table-toolbar .toolbar-buttons {
+  display: flex;
+  align-items: center;
+}
+
+.table-toolbar .selected-count {
+  margin-right: 12px;
+  color: #666;
+  font-size: 14px;
+}
+
+.table-toolbar .toolbar-buttons > .ant-btn:not([type="text"]) {
+  margin-right: 16px;
+}
+
+.table-toolbar .toolbar-buttons > .ant-btn-primary {
+  color: #fff !important;
+}
+
+.table-toolbar .toolbar-buttons > .ant-btn-primary:hover {
+  color: #fff !important;
+}
+
+.table-toolbar .toolbar-buttons > .ant-btn:not([type="text"]):last-child {
+  margin-right: 0;
+}
+
+/* 导入按钮在分隔符前，减少右边距 */
+.table-toolbar .toolbar-buttons > .ant-btn:nth-child(3):not([type="text"]) {
+  margin-right: 8px;
+}
+
+.table-toolbar .toolbar-separator {
+  width: 1px;
+  height: 16px;
+  background: #e8e8e8;
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+.table-toolbar .toolbar-buttons > .ant-btn[type="text"] {
+  padding: 2px 2px !important;
+  margin-right: 2px !important;
+}
+
+.table-toolbar .toolbar-buttons > .ant-btn[type="text"]:last-of-type {
+  margin-right: 0 !important;
+}
+
+.table-toolbar .ant-btn-link {
+  padding: 0;
+  height: auto;
+}
+
+.main-table-card {
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.main-table-card .ant-card-body {
+  padding: 8px 24px 16px 24px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.main-table-card .ant-table-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.main-table-card .ant-spin-nested-loading {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.main-table-card .ant-spin-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.main-table-card .ant-table {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.main-table-card .ant-table-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.main-table-card .ant-table-body {
+  flex: 1;
+  overflow: auto !important;
+}
+
+.detail-resize-handle {
+  height: 4px;
+  background: #e8e8e8;
+  cursor: row-resize;
+  position: relative;
+  flex-shrink: 0;
+  user-select: none;
+  transition: background 0.2s;
+}
+
+.detail-resize-handle:hover {
+  background: #02b980;
+}
+
+.detail-resize-handle::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 2px;
+  background: #d9d9d9;
+  border-radius: 1px;
+}
+
+.detail-resize-handle:hover::before {
+  background: #02b980;
+}
+
+.detail-table-card {
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  border-top: 1px solid #e8e8e8;
+  margin-top: 0;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.detail-table-card .ant-card-body {
+  padding: 16px 24px 20px 24px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.detail-table-card .ant-table-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.detail-table-card .ant-spin-nested-loading {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.detail-table-card .ant-spin-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.detail-table-card .ant-table {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.detail-table-card .ant-table-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.detail-table-card .ant-table-body {
+  flex: 1;
+  overflow: auto !important;
+}
+
+/* 表格样式优化 */
+.ant-table-small .ant-table-thead > tr > th {
+  background: #fafafa;
+  font-weight: 600;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background: #f5f5f5;
+}
+
+/* 多层表头样式 */
+.ant-table-thead > tr > th {
+  text-align: center;
+}
+
+.ant-table-thead > tr > th[colspan] {
+  text-align: center;
+}
+
+/* 单据编号链接样式 */
+.doc-no-link {
+  cursor: pointer;
+}
+
+.doc-no-link:hover {
+  text-decoration: underline !important;
+}
+
+/* 表格行选中状态 */
+.material-control-workbench .ant-table-tbody > tr.row-selected > td {
+  background-color: #e6f7ff !important;
+}
+
+.material-control-workbench .ant-table-tbody > tr.row-selected:hover > td {
+  background-color: #bae7ff !important;
+}
+
+/* 列宽拖拽调整样式 */
+.react-resizable-handle {
+  position: absolute;
+  right: -5px;
+  bottom: 0;
+  top: 0;
+  width: 10px;
+  cursor: col-resize;
+  z-index: 1;
+  background: transparent !important;
+  border: none !important;
+  opacity: 0 !important;
+}
+
+.react-resizable-handle::before,
+.react-resizable-handle::after {
+  display: none !important;
+  content: none !important;
+  visibility: hidden !important;
+}
+
+.ant-table-thead > tr > th {
+  position: relative;
+}
+
+.ant-table-thead > tr > th:hover .react-resizable-handle {
+  opacity: 0 !important;
+}
+
+/* 隐藏非供给行的复选框（只显示中间行的复选框） */
+.material-control-workbench .ant-table-tbody > tr.hide-checkbox .ant-checkbox-wrapper,
+.material-control-workbench .ant-table-tbody > tr[data-row-type="需求"] .ant-checkbox-wrapper,
+.material-control-workbench .ant-table-tbody > tr[data-row-type="结存"] .ant-checkbox-wrapper {
+  display: none !important;
+}
