@@ -335,13 +335,6 @@ const SalesDetail: React.FC = () => {
         width: getColumnWidth('cumulativeDemandRef', 140, mainColumnWidths),
       },
       {
-        title: '计划数量',
-        dataIndex: 'planQty',
-        key: 'planQty',
-        align: 'right',
-        width: getColumnWidth('planQty', 120, mainColumnWidths),
-      },
-      {
         title: '发货数量',
         dataIndex: 'deliveredQty',
         key: 'deliveredQty',
