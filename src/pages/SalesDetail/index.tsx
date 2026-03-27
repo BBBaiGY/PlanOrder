@@ -402,6 +402,23 @@ const SalesDetail: React.FC = () => {
     return mainColumns.reduce((sum, col) => sum + (Number(col.width) || 100), 0)
   }, [mainColumns])
 
+  const summaryLayout = useMemo(() => {
+    const columnKeys = mainColumns.map((col) => String(col.key ?? ''))
+    const qtyIndex = columnKeys.indexOf('qty')
+    const deliveredQtyIndex = columnKeys.indexOf('deliveredQty')
+    const undeliveredQtyIndex = columnKeys.indexOf('undeliveredQty')
+    const firstValueIndex = [qtyIndex, deliveredQtyIndex, undeliveredQtyIndex]
+      .filter((index) => index >= 0)
+      .sort((a, b) => a - b)[0] ?? columnKeys.length
+
+    return {
+      labelColSpan: Math.max(firstValueIndex, 1),
+      qtyIndex,
+      deliveredQtyIndex,
+      undeliveredQtyIndex,
+    }
+  }, [mainColumns])
+
   const handleQuery = () => {
     setCurrentPage(1)
     message.success('查询成功')
@@ -708,16 +725,16 @@ const SalesDetail: React.FC = () => {
           summary={() => (
             <Table.Summary fixed="bottom">
               <Table.Summary.Row>
-                <Table.Summary.Cell index={0} colSpan={7} align="left">
+                <Table.Summary.Cell index={0} colSpan={summaryLayout.labelColSpan} align="left">
                   合计
                 </Table.Summary.Cell>
-                <Table.Summary.Cell index={7} align="right">
+                <Table.Summary.Cell index={summaryLayout.qtyIndex} align="right">
                   {columnTotals.qty}
                 </Table.Summary.Cell>
-                <Table.Summary.Cell index={13} align="right">
+                <Table.Summary.Cell index={summaryLayout.deliveredQtyIndex} align="right">
                   {columnTotals.deliveredQty}
                 </Table.Summary.Cell>
-                <Table.Summary.Cell index={14} align="right">
+                <Table.Summary.Cell index={summaryLayout.undeliveredQtyIndex} align="right">
                   {columnTotals.undeliveredQty}
                 </Table.Summary.Cell>
               </Table.Summary.Row>
