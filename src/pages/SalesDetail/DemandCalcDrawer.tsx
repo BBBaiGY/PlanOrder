@@ -1,25 +1,6 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import {
-  Drawer,
-  Card,
-  Space,
-  Button,
-  Table,
-  Typography,
-  Modal,
-  Popconfirm,
-  Form,
-  Radio,
-  InputNumber,
-  DatePicker,
-  Select,
-  Checkbox,
-  Tabs,
-  Row,
-  Col,
-  Tag,
-  message,
-} from 'antd'
+import { Drawer, Card, Space, Button, Table, Typography, Modal, Popconfirm, Form, Radio, InputNumber, DatePicker, Select, Checkbox, Tabs, Tag, message, Input } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import dayjs, { Dayjs } from 'dayjs'
 
@@ -37,14 +18,12 @@ type SalesDetailItem = {
   rowKey?: string
 }
 
-type DemandCalcRule = {
-  warehouseScope: 'all' | 'exclude'
-  excludedWarehouses: string[]
-
+export type DemandCalcRule = {
   inventoryScope: 'none' | 'available'
   availableStockSettings: {
     includeOnHand: boolean
     includeSafetyStock: boolean
+    onHandExcludedWarehouses?: string[]
 
     expectedIn: {
       planNew: { checked: boolean; pendingApproval: boolean } // 计划新增、待审批
@@ -75,6 +54,8 @@ type DemandCalcRule = {
     | 'product_sourceDoc_line'
     | 'mto_product_sourceDoc__mts_product'
     | 'mto_product_sourceDoc_line__mts_product'
+
+  planApprovalDefaultStatus: 'auto' | 'manual'
 }
 
 type DemandCalcDetailRow = {
@@ -96,11 +77,9 @@ type DemandCalcDetailRow = {
   bomStatus: '已维护' | '待维护'
 }
 
-const LAST_RULE_STORAGE_KEY = 'plan-order:demand-calc:last-rule'
+export const LAST_RULE_STORAGE_KEY = 'plan-order:demand-calc:last-rule'
 
-const defaultRule: DemandCalcRule = {
-  warehouseScope: 'all',
-  excludedWarehouses: [],
+export const defaultRule: DemandCalcRule = {
   inventoryScope: 'available',
   availableStockSettings: {
     includeOnHand: true,
@@ -119,9 +98,10 @@ const defaultRule: DemandCalcRule = {
   inventoryMethod: 'step',
   bomExpandOnNegativeAvailable: true,
   resultMergeRule: 'product',
+  planApprovalDefaultStatus: 'auto',
 }
 
-const WAREHOUSE_OPTIONS = [
+export const WAREHOUSE_OPTIONS = [
   { value: 'WH001', label: 'WH001 主仓' },
   { value: 'WH002', label: 'WH002 成品仓' },
   { value: 'WH003', label: 'WH003 半成品仓' },
@@ -164,54 +144,92 @@ const normalizeRow = (row: DemandCalcDetailRow): DemandCalcDetailRow => {
 }
 
 function formatRule(rule: DemandCalcRule) {
-  const warehouseText =
-    rule.warehouseScope === 'all'
-      ? '仓库=全部'
-      : `仓库=排除(${(rule.excludedWarehouses || []).length}个)`
-
-  const inventoryScopeText = rule.inventoryScope === 'none' ? '库存=不考虑' : '库存=预计可用库存'
+  const inventoryScopeText = rule.inventoryScope === 'none' ? '库存口径：不考虑库存' : '库存口径：预计可用库存'
 
   const inventoryMethodText = (() => {
     switch (rule.inventoryMethod) {
       case 'step':
-        return '方式=逐级考虑库存'
+        return '库存方式：逐级考虑库存'
       case 'mtoNoStock_mtsStock':
-        return '方式=MTO不考虑库存/MTS考虑库存'
+        return '库存方式：MTO不考虑库存，MTS考虑库存'
       case 'noFinished':
-        return '方式=不考虑成品库存'
+        return '库存方式：不考虑成品库存'
       case 'noSemiFinished':
-        return '方式=不考虑中间半成品库存'
+        return '库存方式：不考虑中间半成品库存'
       case 'onlyLowest':
-        return '方式=只考虑末级库存'
+        return '库存方式：只考虑末级库存'
       default:
-        return '方式=—'
+        return '库存方式：—'
     }
   })()
 
-  const bomText = rule.bomExpandOnNegativeAvailable ? 'BOM展开=负预计可用库存' : 'BOM展开=不展开'
+  const bomText = rule.bomExpandOnNegativeAvailable ? 'BOM展开：按负预计可用库存展开' : 'BOM展开：不展开'
 
   const mergeText = (() => {
     switch (rule.resultMergeRule) {
       case 'none':
-        return '合并=不合并'
+        return '结果合并：不合并'
       case 'product':
-        return '合并=产品'
+        return '结果合并：产品'
       case 'product_sourceDoc':
-        return '合并=产品+来源单据'
+        return '结果合并：产品+来源单据'
       case 'product_sourceDoc_line':
-        return '合并=产品+来源单据+行号'
+        return '结果合并：产品+来源单据+行号'
       case 'mto_product_sourceDoc__mts_product':
-        return '合并=MTO(产品+来源单据)/MTS(产品)'
+        return '结果合并：MTO(产品+来源单据)/MTS(产品)'
       case 'mto_product_sourceDoc_line__mts_product':
-        return '合并=MTO(产品+来源单据+行号)/MTS(产品)'
+        return '结果合并：MTO(产品+来源单据+行号)/MTS(产品)'
       default:
-        return '合并=—'
+        return '结果合并：—'
     }
   })()
-  return `${warehouseText}；${inventoryScopeText}；${inventoryMethodText}；${bomText}；${mergeText}`
+  const approvalText =
+    rule.planApprovalDefaultStatus === 'manual'
+      ? '需求计划审批：手动审批'
+      : '需求计划审批：自动审批'
+  return `${inventoryScopeText}；${inventoryMethodText}；${bomText}；${mergeText}；${approvalText}`
 }
 
-function loadLastRule(): DemandCalcRule {
+function formatAvailableStockSummary(rule: DemandCalcRule) {
+  if (rule.inventoryScope !== 'available') return '预计可用库存：不参与计算'
+  const settings = rule.availableStockSettings
+  const plusParts: string[] = []
+  const minusParts: string[] = []
+
+  if (settings.includeOnHand) {
+    const warehouseText =
+      settings.onHandExcludedWarehouses && settings.onHandExcludedWarehouses.length
+        ? `(排除仓库${settings.onHandExcludedWarehouses.length}个)`
+        : ''
+    plusParts.push(`现有库存${warehouseText}`)
+  }
+  if (settings.expectedIn.planNew.checked) {
+    plusParts.push(`计划新增${settings.expectedIn.planNew.pendingApproval ? '(含待审批)' : ''}`)
+  }
+  if (settings.expectedIn.purchaseInTransit.checked) {
+    plusParts.push(`采购在途${settings.expectedIn.purchaseInTransit.pendingApproval ? '(含待审批)' : ''}`)
+  }
+  if (settings.expectedIn.productionWip.checked) {
+    plusParts.push(`生产在制${settings.expectedIn.productionWip.notStarted ? '(含未开始)' : ''}`)
+  }
+
+  if (settings.includeSafetyStock) minusParts.push('安全库存')
+  if (settings.expectedOut.salesPendingIssue.checked) {
+    minusParts.push(`销售待发${settings.expectedOut.salesPendingIssue.pendingApproval ? '(含待审批)' : ''}`)
+  }
+  if (settings.expectedOut.planPendingPick.checked) {
+    minusParts.push(`计划待领${settings.expectedOut.planPendingPick.pendingApproval ? '(含待审批)' : ''}`)
+  }
+  if (settings.expectedOut.productionPendingPick.checked) {
+    minusParts.push(`生产待领${settings.expectedOut.productionPendingPick.notStarted ? '(含未开始)' : ''}`)
+  }
+
+  const plusExpr = plusParts.length ? plusParts.join(' + ') : '0'
+  const minusExpr = minusParts.length ? minusParts.join(' + ') : '0'
+  return `预计可用库存 = (${plusExpr}) - (${minusExpr})`
+}
+
+export function loadLastRule(): DemandCalcRule {
   try {
     const raw = localStorage.getItem(LAST_RULE_STORAGE_KEY)
     if (!raw) return defaultRule
@@ -234,6 +252,9 @@ function loadLastRule(): DemandCalcRule {
           ...defaultRule.availableStockSettings,
           includeOnHand: typeof p.includeOnHand === 'boolean' ? p.includeOnHand : defaultRule.availableStockSettings.includeOnHand,
           includeSafetyStock: typeof p.includeSafetyStock === 'boolean' ? p.includeSafetyStock : defaultRule.availableStockSettings.includeSafetyStock,
+          onHandExcludedWarehouses: Array.isArray((p as any).onHandExcludedWarehouses)
+            ? ((p as any).onHandExcludedWarehouses as string[])
+            : defaultRule.availableStockSettings.onHandExcludedWarehouses,
           expectedIn: {
             ...defaultRule.availableStockSettings.expectedIn,
             ...(p.expectedIn || {}),
@@ -250,14 +271,13 @@ function loadLastRule(): DemandCalcRule {
           },
         }
       })(),
-      excludedWarehouses: Array.isArray(parsed.excludedWarehouses) ? (parsed.excludedWarehouses as string[]) : [],
     }
   } catch {
     return defaultRule
   }
 }
 
-function persistLastRule(rule: DemandCalcRule) {
+export function persistLastRule(rule: DemandCalcRule) {
   try {
     localStorage.setItem(LAST_RULE_STORAGE_KEY, JSON.stringify(rule))
   } catch {
@@ -274,9 +294,9 @@ export type DemandCalcDrawerProps = {
 const DemandCalcDrawer: React.FC<DemandCalcDrawerProps> = ({ open, salesDetails, onClose }) => {
   const [rule, setRule] = useState<DemandCalcRule>(defaultRule)
   const [ruleModalOpen, setRuleModalOpen] = useState(false)
-  const [availableStockActiveKey, setAvailableStockActiveKey] = useState<string>('stock')
   const [ruleTabKey, setRuleTabKey] = useState<string>('rules')
   const [ruleForm] = Form.useForm<DemandCalcRule>()
+  const [remark, setRemark] = useState<string>('')
 
   const initialRows = useMemo<DemandCalcDetailRow[]>(() => {
     const today = dayjs()
@@ -315,9 +335,11 @@ const DemandCalcDrawer: React.FC<DemandCalcDrawerProps> = ({ open, salesDetails,
     const lastRule = loadLastRule()
     setRule(lastRule)
     setRows(initialRows.map((r) => normalizeRow(r)))
+    setRemark('')
   }, [open, initialRows])
 
   const ruleSummary = useMemo(() => formatRule(rule), [rule])
+  const availableStockSummary = useMemo(() => formatAvailableStockSummary(rule), [rule])
 
   const selectedSummary = useMemo(() => {
     const distinctProducts = new Set(rows.map((r) => r.productCode)).size
@@ -526,16 +548,31 @@ const DemandCalcDrawer: React.FC<DemandCalcDrawerProps> = ({ open, salesDetails,
                 <Typography.Text type="secondary" className="calc-rule-summary">
                   默认上一次计算规则：{ruleSummary}
                 </Typography.Text>
+                <Typography.Text type="secondary" className="calc-rule-summary">
+                  {availableStockSummary}
+                </Typography.Text>
               </div>
               <Button onClick={handleOpenRuleModal}>修改</Button>
             </div>
+          </Card>
+
+          <Card size="small">
+            <Space direction="vertical" style={{ width: '100%' }} size={8}>
+              <Typography.Text strong>备注</Typography.Text>
+              <Input.TextArea
+                value={remark}
+                onChange={(e) => setRemark(e.target.value)}
+                autoSize={{ minRows: 1, maxRows: 3 }}
+                placeholder="可填写本次需求计算的说明"
+              />
+            </Space>
           </Card>
 
           <Card
             size="small"
             title={
               <Space size={10}>
-                <Typography.Text strong>明细</Typography.Text>
+                <Typography.Text strong>计算单据</Typography.Text>
                 <Typography.Text type="secondary">
                   共 {rows.length} 行，{selectedSummary.distinctProducts} 个产品，可计算数量合计 {selectedSummary.totalAvailable}
                 </Typography.Text>
@@ -577,41 +614,6 @@ const DemandCalcDrawer: React.FC<DemandCalcDrawerProps> = ({ open, salesDetails,
                 children: (
                   <div className="rule-config-all">
                     <div className="rule-item">
-                      <div className="rule-item-label">仓库计算范围</div>
-                      <div className="rule-item-control">
-                        <Form.Item<DemandCalcRule> name="warehouseScope" rules={[{ required: true }]} noStyle>
-                          <Radio.Group>
-                            <Radio value="all">全部仓库</Radio>
-                            <Radio value="exclude">排除部分仓库计算</Radio>
-                          </Radio.Group>
-                        </Form.Item>
-                        <Form.Item noStyle shouldUpdate={(p, c) => p.warehouseScope !== c.warehouseScope}>
-                          {({ getFieldValue }) => {
-                            const scope = getFieldValue('warehouseScope') as DemandCalcRule['warehouseScope']
-                            if (scope !== 'exclude') return null
-                            return (
-                              <div className="rule-item-inline-extra rule-item-inline-extra--warehouse">
-                                <Form.Item<DemandCalcRule>
-                                  name="excludedWarehouses"
-                                  rules={[{ required: true, message: '请选择要排除的仓库' }]}
-                                  noStyle
-                                >
-                                  <Select
-                                    mode="multiple"
-                                    allowClear
-                                    placeholder="请选择要排除的仓库"
-                                    options={WAREHOUSE_OPTIONS}
-                                    style={{ minWidth: 260 }}
-                                  />
-                                </Form.Item>
-                              </div>
-                            )
-                          }}
-                        </Form.Item>
-                      </div>
-                    </div>
-
-                    <div className="rule-item">
                       <div className="rule-item-label">库存考虑范围</div>
                       <div className="rule-item-control">
                         <Form.Item<DemandCalcRule> name="inventoryScope" rules={[{ required: true }]} noStyle>
@@ -625,16 +627,13 @@ const DemandCalcDrawer: React.FC<DemandCalcDrawerProps> = ({ open, salesDetails,
                         <Form.Item noStyle shouldUpdate={(p, c) => p.inventoryScope !== c.inventoryScope}>
                           {({ getFieldValue }) => {
                             const invScope = getFieldValue('inventoryScope') as DemandCalcRule['inventoryScope']
+                            if (invScope !== 'available') return null
                             return (
                               <div className="rule-item-inline-hint">
                                 <Typography.Text type="secondary">
                                   预计可用库存配置请在第二页进行设置
                                 </Typography.Text>
-                                <Button
-                                  type="link"
-                                  disabled={invScope !== 'available'}
-                                  onClick={() => setRuleTabKey('availableStock')}
-                                >
+                                <Button type="link" onClick={() => setRuleTabKey('availableStock')}>
                                   去配置
                                 </Button>
                               </div>
@@ -663,7 +662,7 @@ const DemandCalcDrawer: React.FC<DemandCalcDrawerProps> = ({ open, salesDetails,
                     </div>
 
                     <div className="rule-item">
-                      <div className="rule-item-label">BOM 展开子件需求</div>
+                      <div className="rule-item-label">其他需求 BOM 展开计算</div>
                       <div className="rule-item-control">
                         <Form.Item<DemandCalcRule> name="bomExpandOnNegativeAvailable" valuePropName="checked" noStyle>
                           <Checkbox>负预计可用库存</Checkbox>
@@ -689,12 +688,26 @@ const DemandCalcDrawer: React.FC<DemandCalcDrawerProps> = ({ open, salesDetails,
                         </Form.Item>
                       </div>
                     </div>
+
+                    <div className="rule-item">
+                      <div className="rule-item-label">需求计划默认审批状态</div>
+                      <div className="rule-item-control">
+                        <Form.Item<DemandCalcRule> name="planApprovalDefaultStatus" rules={[{ required: true }]} noStyle>
+                          <Radio.Group
+                            options={[
+                              { value: 'auto', label: '自动审批' },
+                              { value: 'manual', label: '手动审批' },
+                            ]}
+                          />
+                        </Form.Item>
+                      </div>
+                    </div>
                   </div>
                 ),
               },
               {
                 key: 'availableStock',
-                label: '预计可用库存配置',
+                label: '预计可用库存',
                 children: (
                   <div className="rule-config-all">
                     <div className="rule-item">
@@ -709,13 +722,40 @@ const DemandCalcDrawer: React.FC<DemandCalcDrawerProps> = ({ open, salesDetails,
                     <div className="rule-item">
                       <div className="rule-item-label">库存数量</div>
                       <div className="rule-item-control">
-                        <Space size={24} wrap>
-                          <Form.Item name={['availableStockSettings', 'includeOnHand']} valuePropName="checked" noStyle>
-                            <Checkbox>现有库存</Checkbox>
-                          </Form.Item>
-                          <Form.Item name={['availableStockSettings', 'includeSafetyStock']} valuePropName="checked" noStyle>
-                            <Checkbox>安全库存</Checkbox>
-                          </Form.Item>
+                        <Space size={24} direction="vertical">
+                          <div className="available-stock-item">
+                            <Form.Item name={['availableStockSettings', 'includeOnHand']} valuePropName="checked" noStyle>
+                              <Checkbox>现有库存</Checkbox>
+                            </Form.Item>
+                            <Form.Item noStyle shouldUpdate={(prev, cur) => prev.availableStockSettings?.includeOnHand !== cur.availableStockSettings?.includeOnHand}>
+                              {({ getFieldValue }) => {
+                                const checked = Boolean(getFieldValue(['availableStockSettings', 'includeOnHand']))
+                                if (!checked) return null
+                                return (
+                                  <Space size={8} style={{ marginLeft: 16 }}>
+                                    <Typography.Text type="secondary">排除部分仓库</Typography.Text>
+                                    <Form.Item
+                                      name={['availableStockSettings', 'onHandExcludedWarehouses']}
+                                      noStyle
+                                    >
+                                      <Select
+                                        mode="multiple"
+                                        allowClear
+                                        placeholder="请选择仓库"
+                                        options={WAREHOUSE_OPTIONS}
+                                        style={{ minWidth: 260 }}
+                                      />
+                                    </Form.Item>
+                                  </Space>
+                                )
+                              }}
+                            </Form.Item>
+                          </div>
+                          <div className="available-stock-item">
+                            <Form.Item name={['availableStockSettings', 'includeSafetyStock']} valuePropName="checked" noStyle>
+                              <Checkbox>安全库存</Checkbox>
+                            </Form.Item>
+                          </div>
                         </Space>
                       </div>
                     </div>
@@ -726,7 +766,16 @@ const DemandCalcDrawer: React.FC<DemandCalcDrawerProps> = ({ open, salesDetails,
                         <Space size={24} direction="vertical">
                           <div className="available-stock-item available-stock-item--with-unapproved">
                             <Form.Item name={['availableStockSettings', 'expectedIn', 'planNew', 'checked']} valuePropName="checked" noStyle>
-                              <Checkbox>计划新增</Checkbox>
+                              <Checkbox
+                                onChange={(e) => {
+                                  ruleForm.setFieldValue(
+                                    ['availableStockSettings', 'expectedIn', 'planNew', 'pendingApproval'],
+                                    e.target.checked
+                                  )
+                                }}
+                              >
+                                计划新增
+                              </Checkbox>
                             </Form.Item>
                             <Form.Item noStyle shouldUpdate>
                               {({ getFieldValue }) => {
@@ -746,7 +795,16 @@ const DemandCalcDrawer: React.FC<DemandCalcDrawerProps> = ({ open, salesDetails,
 
                           <div className="available-stock-item available-stock-item--with-unapproved">
                             <Form.Item name={['availableStockSettings', 'expectedIn', 'purchaseInTransit', 'checked']} valuePropName="checked" noStyle>
-                              <Checkbox>采购在途</Checkbox>
+                              <Checkbox
+                                onChange={(e) => {
+                                  ruleForm.setFieldValue(
+                                    ['availableStockSettings', 'expectedIn', 'purchaseInTransit', 'pendingApproval'],
+                                    e.target.checked
+                                  )
+                                }}
+                              >
+                                采购在途
+                              </Checkbox>
                             </Form.Item>
                             <Form.Item noStyle shouldUpdate>
                               {({ getFieldValue }) => {
@@ -766,7 +824,16 @@ const DemandCalcDrawer: React.FC<DemandCalcDrawerProps> = ({ open, salesDetails,
 
                           <div className="available-stock-item available-stock-item--with-unapproved">
                             <Form.Item name={['availableStockSettings', 'expectedIn', 'productionWip', 'checked']} valuePropName="checked" noStyle>
-                              <Checkbox>生产在制</Checkbox>
+                              <Checkbox
+                                onChange={(e) => {
+                                  ruleForm.setFieldValue(
+                                    ['availableStockSettings', 'expectedIn', 'productionWip', 'notStarted'],
+                                    e.target.checked
+                                  )
+                                }}
+                              >
+                                生产在制
+                              </Checkbox>
                             </Form.Item>
                             <Form.Item noStyle shouldUpdate>
                               {({ getFieldValue }) => {
@@ -793,7 +860,16 @@ const DemandCalcDrawer: React.FC<DemandCalcDrawerProps> = ({ open, salesDetails,
                         <Space size={24} direction="vertical">
                           <div className="available-stock-item available-stock-item--with-unapproved">
                             <Form.Item name={['availableStockSettings', 'expectedOut', 'salesPendingIssue', 'checked']} valuePropName="checked" noStyle>
-                              <Checkbox>销售待发</Checkbox>
+                              <Checkbox
+                                onChange={(e) => {
+                                  ruleForm.setFieldValue(
+                                    ['availableStockSettings', 'expectedOut', 'salesPendingIssue', 'pendingApproval'],
+                                    e.target.checked
+                                  )
+                                }}
+                              >
+                                销售待发
+                              </Checkbox>
                             </Form.Item>
                             <Form.Item noStyle shouldUpdate>
                               {({ getFieldValue }) => {
@@ -816,7 +892,16 @@ const DemandCalcDrawer: React.FC<DemandCalcDrawerProps> = ({ open, salesDetails,
 
                           <div className="available-stock-item available-stock-item--with-unapproved">
                             <Form.Item name={['availableStockSettings', 'expectedOut', 'planPendingPick', 'checked']} valuePropName="checked" noStyle>
-                              <Checkbox>计划待领</Checkbox>
+                              <Checkbox
+                                onChange={(e) => {
+                                  ruleForm.setFieldValue(
+                                    ['availableStockSettings', 'expectedOut', 'planPendingPick', 'pendingApproval'],
+                                    e.target.checked
+                                  )
+                                }}
+                              >
+                                计划待领
+                              </Checkbox>
                             </Form.Item>
                             <Form.Item noStyle shouldUpdate>
                               {({ getFieldValue }) => {
@@ -836,7 +921,16 @@ const DemandCalcDrawer: React.FC<DemandCalcDrawerProps> = ({ open, salesDetails,
 
                           <div className="available-stock-item available-stock-item--with-unapproved">
                             <Form.Item name={['availableStockSettings', 'expectedOut', 'productionPendingPick', 'checked']} valuePropName="checked" noStyle>
-                              <Checkbox>生产待领</Checkbox>
+                              <Checkbox
+                                onChange={(e) => {
+                                  ruleForm.setFieldValue(
+                                    ['availableStockSettings', 'expectedOut', 'productionPendingPick', 'notStarted'],
+                                    e.target.checked
+                                  )
+                                }}
+                              >
+                                生产待领
+                              </Checkbox>
                             </Form.Item>
                             <Form.Item noStyle shouldUpdate>
                               {({ getFieldValue }) => {
@@ -918,4 +1012,3 @@ const DemandCalcDrawer: React.FC<DemandCalcDrawerProps> = ({ open, salesDetails,
 }
 
 export default DemandCalcDrawer
-

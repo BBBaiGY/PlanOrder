@@ -22,6 +22,15 @@ export interface MaterialItem {
   workshop: string
   expanded?: boolean
   timeData?: TimeDataItem[]
+  planNew?: number
+  purchaseInTransit?: number
+  productionWip?: number
+  salesPendingIssue?: number
+  planPendingPick?: number
+  productionPendingPick?: number
+  expectedIn?: number
+  expectedOut?: number
+  availableStock?: number
   rowType?: '需求' | '供给' | '结存'
   rowKey?: string
   initialValue?: number
@@ -46,19 +55,40 @@ export interface SupplyDemandDetail {
   exception: string
 }
 
+export type PlanStatus = '待审批' | '待下发' | '已下发'
+
+/** 计划用料清单行 */
+export interface PlanMaterialItem {
+  key: string
+  productCode: string
+  productName: string
+  specification: string
+  unitUsage: number
+  demandQty: number
+  issueProcess: string
+  remark: string
+  customField: string
+  [key: string]: any
+}
+
 /** 需求计划列表项 */
 export interface PlanOrderItem {
   key: string
   rowKey?: string
   planNo: string
+  planDate: string
   productCode: string
   productName: string
   specification: string
   suggestedQty: number
   planQty: number
   unit: string
+  demandDate: string
+  planReleaseDate?: string
+  planExecDate?: string
   planStartDate: string
   planEndDate: string
+  planStatus?: PlanStatus
   approvalStatus: string
   releaseStatus: string
   releaseType: string
@@ -67,11 +97,19 @@ export interface PlanOrderItem {
   sourceDocType: string
   sourceDocNo: string
   sourceDocDetail: string
+  sourceDemandDate: string
+  sourceCustomer: string
+  bomParentProduct: string
+  sourceDocProduct: string
+  remark: string
+  generatedDoc: string
+  actualIssueQty: number
   createBy: string
   createTime: string
   updateBy: string
   updateTime: string
   approver: string
   approvalTime: string
+  materialList?: PlanMaterialItem[]
   [key: string]: any
 }

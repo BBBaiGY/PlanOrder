@@ -7,6 +7,35 @@
   overflow: hidden;
 }
 
+.plan-order-notice {
+  margin: 12px 24px 0;
+  padding: 10px 12px;
+  border: 1px solid #ffe58f;
+  border-radius: 6px;
+  background: #fffbe6;
+  color: #ad6800;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.plan-order-centered-placeholder {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.plan-order-centered-message {
+  padding: 12px 16px;
+  border: 1px solid #ffe58f;
+  border-radius: 6px;
+  background: #fffbe6;
+  color: #ad6800;
+  font-size: 14px;
+  line-height: 22px;
+}
+
 /* 产品分类导航和筛选 */
 .category-filter-bar {
   padding: 0 24px;
@@ -368,6 +397,10 @@
   background: #f5f5f5;
 }
 
+.plan-order .ant-table-tbody > tr.plan-order-highlight-row > td {
+  background: #e6f4ff !important;
+}
+
 /* 确保表格行不可点击 */
 .plan-order .ant-table-tbody > tr {
   cursor: default !important;
@@ -403,32 +436,210 @@
 }
 
 
-/* 列宽拖拽调整样式 */
-.react-resizable-handle {
-  position: absolute;
-  right: -5px;
-  bottom: 0;
-  top: 0;
-  width: 10px;
-  cursor: col-resize;
-  z-index: 1;
-  background: transparent !important;
-  border: none !important;
-  opacity: 0 !important;
+
+/* 单行操作列 */
+.plan-order .row-actions {
+  white-space: nowrap;
 }
 
-.react-resizable-handle::before,
-.react-resizable-handle::after {
-  display: none !important;
-  content: none !important;
-  visibility: hidden !important;
+.plan-order .row-actions .ant-btn-link {
+  padding: 0 4px;
+  height: 24px;
+  font-size: 13px;
 }
 
-.ant-table-thead > tr > th {
-  position: relative;
+.plan-order .row-actions .ant-btn-link:disabled {
+  color: #bfbfbf;
 }
 
-.ant-table-thead > tr > th:hover .react-resizable-handle {
-  opacity: 0 !important;
+/* 操作列固定右侧时的阴影 */
+.plan-order .ant-table-cell-fix-right-first::after {
+  box-shadow: -6px 0 6px -4px rgba(0, 0, 0, 0.08);
+}
+
+/* EditDrawer 编辑抽屉 */
+.edit-drawer .edit-drawer-info {
+  margin-bottom: 24px;
+}
+
+.edit-drawer .edit-drawer-info .ant-descriptions-item-label {
+  background: #fafafa;
+  font-weight: 500;
+  color: #666;
+}
+
+.edit-drawer .ant-form-item {
+  margin-bottom: 16px;
+}
+
+.edit-drawer .edit-drawer-materials {
+  margin-top: 8px;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.edit-drawer .edit-drawer-materials-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.edit-drawer .edit-drawer-materials-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.edit-drawer .edit-drawer-materials-table .ant-table-thead > tr > th {
+  white-space: nowrap;
+}
+
+.edit-drawer .material-product-info {
+  line-height: 20px;
+}
+
+.edit-drawer .material-product-info > div {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.edit-drawer .edit-drawer-materials-footer {
+  padding: 8px 12px;
+  border-top: 1px solid #f0f0f0;
+  background: #fafafa;
+  color: #666;
+  font-size: 12px;
+}
+
+/* 拆分弹窗信息区 */
+.split-modal-info {
+  display: flex;
+  gap: 24px;
+  padding: 10px 12px;
+  background: #f6f8fa;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.split-modal-info strong {
+  color: #1890ff;
+  font-size: 15px;
+}
+
+/* 拆分弹窗动态表格 */
+.split-modal-table {
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.split-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #fafafa;
+  font-weight: 600;
+  font-size: 13px;
+  color: #333;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.split-modal-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.split-modal-row:last-child {
+  border-bottom: none;
+}
+
+.split-col-index {
+  width: 40px;
+  flex-shrink: 0;
+  text-align: center;
+  color: #999;
+}
+
+.split-col-qty {
+  width: 140px;
+  flex-shrink: 0;
+}
+
+.split-col-date {
+  width: 160px;
+  flex-shrink: 0;
+}
+
+.split-col-exec-date {
+  width: 160px;
+  flex-shrink: 0;
+}
+
+.split-col-supplier {
+  flex: 1;
+  min-width: 100px;
+}
+
+.split-col-remark {
+  flex: 1;
+  min-width: 120px;
+}
+
+.split-col-action {
+  width: 40px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.split-modal-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-top: 1px solid #f0f0f0;
+  background: #fafafa;
+}
+
+.split-modal-total {
+  font-size: 13px;
+  color: #389e0d;
+  font-weight: 500;
+}
+
+.split-modal-total.error {
+  color: #ff4d4f;
+}
+
+.split-modal-diff {
+  margin-left: 4px;
+  font-weight: 400;
+}
+
+/* 批量编辑提示 */
+.batch-edit-tip {
+  padding: 8px 12px;
+  background: #fffbe6;
+  border: 1px solid #ffe58f;
+  border-radius: 6px;
+  color: #ad6800;
+  font-size: 13px;
+}
+
+/* 操作列文字不溢出省略 */
+.plan-order .ant-table-tbody > tr > td:last-child {
+  overflow: visible;
+  max-width: none;
 }
 

@@ -123,6 +123,14 @@
   margin-right: 16px;
 }
 
+.sales-detail-page .table-toolbar .toolbar-batch-left .toolbar-delivery-group {
+  margin-right: 16px;
+}
+
+.sales-detail-page .table-toolbar .toolbar-batch-left .toolbar-delivery-group .ant-btn {
+  margin-right: 0;
+}
+
 .sales-detail-page .table-toolbar .toolbar-cancel-select {
   margin-left: auto;
   color: #8c8c8c;
@@ -182,22 +190,34 @@
 }
 
 .rule-item {
-  display: flex;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  column-gap: 16px;
+  align-items: start;
   padding: 10px 0;
   border-bottom: 1px solid #f5f5f5;
 }
 
 .rule-item-label {
-  width: 160px;
-  flex: 0 0 160px;
   color: #595959;
-  line-height: 32px;
+  line-height: 22px;
+  padding-top: 5px;
 }
 
 .rule-item-control {
-  flex: 1;
   min-width: 0;
+}
+
+.rule-item-control .ant-form-item {
+  margin-bottom: 0;
+}
+
+.rule-item-control > .ant-radio-group,
+.rule-item-control > .ant-select,
+.rule-item-control > .ant-checkbox-wrapper {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .rule-item-inline-hint {
@@ -415,5 +435,20 @@
 
 .sales-detail-page .ant-table-thead > tr > th {
   position: relative;
+}
+
+.sales-detail-page .sales-detail-order-link.ant-btn-link {
+  padding: 0;
+  height: auto;
+  color: #1677ff;
+}
+
+.sales-detail-progress-drawer .ant-drawer-body {
+  padding-top: 12px;
+  background: #fafafa;
+}
+
+.sales-detail-progress-drawer .progress-summary-card {
+  border-radius: 8px;
 }
 

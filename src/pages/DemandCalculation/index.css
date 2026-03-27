@@ -380,32 +380,101 @@
 }
 
 
-/* 列宽拖拽调整样式 */
-.react-resizable-handle {
-  position: absolute;
-  right: -5px;
-  bottom: 0;
-  top: 0;
-  width: 10px;
-  cursor: col-resize;
-  z-index: 1;
-  background: transparent !important;
-  border: none !important;
-  opacity: 0 !important;
+
+/* 需求计算详情侧滑弹窗 */
+.demand-calc-detail-drawer .ant-drawer-body {
+  padding-top: 12px;
 }
 
-.react-resizable-handle::before,
-.react-resizable-handle::after {
-  display: none !important;
-  content: none !important;
-  visibility: hidden !important;
+.demand-calc-detail-header {
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
 }
 
-.ant-table-thead > tr > th {
-  position: relative;
+.demand-calc-detail-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
 }
 
-.ant-table-thead > tr > th:hover .react-resizable-handle {
-  opacity: 0 !important;
+.demand-calc-detail-title-left {
+  display: flex;
+  align-items: center;
+}
+
+.demand-calc-detail-title .label {
+  color: #666;
+}
+
+.demand-calc-detail-title .value {
+  color: #333;
+}
+
+.demand-calc-detail-title .value.strong {
+  font-weight: 600;
+}
+
+.demand-calc-detail-tabs {
+  margin-top: 8px;
+}
+
+.demand-calc-tab-content {
+  padding-top: 8px;
+}
+
+/* 详情 Tab 工具栏：与列表 .table-toolbar 保持一致 */
+.demand-calc-tab-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  margin-bottom: 0;
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.demand-calc-tab-toolbar .toolbar-buttons {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.demand-calc-tab-toolbar .toolbar-buttons > .ant-btn[type="text"] {
+  padding: 2px 2px !important;
+  margin-right: 2px !important;
+}
+
+.demand-calc-tab-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.demand-calc-tab-toolbar-left > .ant-btn[type="text"] {
+  padding: 2px 2px !important;
+  margin-right: 2px !important;
+}
+
+.demand-calc-tab-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.source-doc-link.ant-btn-link {
+  padding: 0 !important;
+  height: auto;
+  color: #1677ff;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.source-doc-link.ant-btn-link:hover {
+  color: #4096ff;
 }
 

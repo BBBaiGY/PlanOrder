@@ -69,8 +69,10 @@ interface LayoutProps {
 const BREADCRUMB_MAP: Record<string, string> = {
   [ROUTES.HOME]: '需求管理 > 供需工作台',
   [ROUTES.MATERIAL_CONTROL]: '需求管理 > 供需工作台',
-  [ROUTES.PLAN_ORDER]: '需求管理 > 需求计划',
-  [ROUTES.PLAN_DEMAND_CALCULATION]: '需求管理 > 需求计算',
+  [ROUTES.PLAN_ORDER_PURCHASE]: '需求管理 > 采购计划',
+  [ROUTES.PLAN_ORDER_PRODUCTION]: '需求管理 > 生产计划',
+  [ROUTES.PLAN_ORDER_OUTSOURCE]: '需求管理 > 委外计划',
+  [ROUTES.PLAN_DEMAND_CALCULATION]: '需求管理 > 需求计算记录',
   [ROUTES.SALES_ORDER]: '销售管理 > 销售订单',
   [ROUTES.SALES_DETAIL]: '销售管理 > 销售明细',
 }
@@ -79,22 +81,52 @@ const BREADCRUMB_MAP: Record<string, string> = {
 const PAGE_TITLE_MAP: Record<string, string> = {
   [ROUTES.HOME]: '供需工作台',
   [ROUTES.MATERIAL_CONTROL]: '供需工作台',
-  [ROUTES.PLAN_ORDER]: '需求计划',
-  [ROUTES.PLAN_DEMAND_CALCULATION]: '需求计算',
+  [ROUTES.PLAN_ORDER_PURCHASE]: '采购计划',
+  [ROUTES.PLAN_ORDER_PRODUCTION]: '生产计划',
+  [ROUTES.PLAN_ORDER_OUTSOURCE]: '委外计划',
+  [ROUTES.PLAN_DEMAND_CALCULATION]: '需求计算记录',
   [ROUTES.SALES_ORDER]: '销售订单',
   [ROUTES.SALES_DETAIL]: '销售明细',
+}
+
+const getParentMenuKeyByPath = (path: string): string | undefined => {
+  if ([ROUTES.SALES_ORDER, ROUTES.SALES_DETAIL].includes(path as any)) return 'sales'
+  if (
+    [
+      ROUTES.PLAN_DEMAND_CALCULATION,
+      ROUTES.PLAN_ORDER_PURCHASE,
+      ROUTES.PLAN_ORDER_PRODUCTION,
+      ROUTES.PLAN_ORDER_OUTSOURCE,
+      ROUTES.MATERIAL_CONTROL,
+      ROUTES.HOME,
+    ].includes(path as any)
+  ) {
+    return 'plan'
+  }
+  return undefined
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false)
   const navigate = useNavigate()
   const { pathname } = useLocation()
+  const [openKeys, setOpenKeys] = useState<string[]>(() => {
+    const parentKey = getParentMenuKeyByPath(pathname)
+    return parentKey ? [parentKey] : []
+  })
 
   // 根据路由设置浏览器标签页标题
   useEffect(() => {
     const pageTitle = PAGE_TITLE_MAP[pathname] || PAGE_TITLE_MAP[ROUTES.HOME] || '供需工作台'
     document.title = `${pageTitle} - 小工单产品原型`
   }, [pathname])
+
+  // 保证刷新/路由变化后，菜单展开状态与当前页面保持一致
+  useEffect(() => {
+    if (collapsed) return
+    const parentKey = getParentMenuKeyByPath(pathname)
+    setOpenKeys(parentKey ? [parentKey] : [])
+  }, [pathname, collapsed])
 
   const menuItems: MenuProps['items'] = [
     {
@@ -123,15 +155,23 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       label: '需求管理',
       children: [
         {
-          key: '/plan/demand-calculation',
-          label: '需求计算',
+          key: ROUTES.PLAN_DEMAND_CALCULATION,
+          label: '需求计算记录',
         },
         {
-          key: '/plan/order',
-          label: '需求计划',
+          key: ROUTES.PLAN_ORDER_PURCHASE,
+          label: '采购计划',
         },
         {
-          key: '/material-control',
+          key: ROUTES.PLAN_ORDER_PRODUCTION,
+          label: '生产计划',
+        },
+        {
+          key: ROUTES.PLAN_ORDER_OUTSOURCE,
+          label: '委外计划',
+        },
+        {
+          key: ROUTES.MATERIAL_CONTROL,
           label: '供需工作台',
         },
       ],
@@ -257,9 +297,21 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           theme="dark"
           mode="inline"
           selectedKeys={[pathname === ROUTES.HOME ? ROUTES.MATERIAL_CONTROL : pathname]}
-          defaultOpenKeys={['plan']}
+          openKeys={collapsed ? [] : openKeys}
           items={menuItems}
           className="sider-menu"
+          onOpenChange={(keys) => {
+            const latestOpenKey = keys[keys.length - 1]
+            if (!latestOpenKey) {
+              setOpenKeys([])
+              return
+            }
+            if (latestOpenKey === 'plan' || latestOpenKey === 'sales') {
+              setOpenKeys([latestOpenKey])
+            } else {
+              setOpenKeys(keys as string[])
+            }
+          }}
           onClick={({ key }) => {
             if (ROUTE_MENU_KEYS.includes(key as any)) navigate(key)
           }}

@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useCallback } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { Card, Table, Button, Space, Input, Select, message } from 'antd'
 import {
   ReloadOutlined,
@@ -10,6 +10,7 @@ import {
   FileTextOutlined,
 } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
+import { useLocation } from 'react-router-dom'
 import ResizableTitle from '@/components/common/ResizableTitle'
 import './index.css'
 
@@ -24,6 +25,7 @@ interface SalesOrderItem {
 }
 
 const SalesOrder: React.FC = () => {
+  const location = useLocation()
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
   const [orderNo, setOrderNo] = useState('')
   const [customerName, setCustomerName] = useState('')
@@ -64,6 +66,22 @@ const SalesOrder: React.FC = () => {
       },
     ]
   }, [])
+
+  const highlightOrderNo = useMemo(() => {
+    const params = new URLSearchParams(location.search)
+    return params.get('highlightOrderNo')?.trim() || ''
+  }, [location.search])
+
+  useEffect(() => {
+    if (!highlightOrderNo) return
+    setStatus('全部')
+    setOrderNo('')
+    setCustomerName('')
+    const matchedIndex = dataSource.findIndex((item) => item.orderNo === highlightOrderNo)
+    if (matchedIndex >= 0) {
+      setCurrentPage(Math.floor(matchedIndex / pageSize) + 1)
+    }
+  }, [highlightOrderNo, dataSource, pageSize])
 
   // 仅按搜索栏（订单号、客户名称）筛选，用于二级分组数量统计
   const baseFiltered = useMemo(() => {
@@ -114,7 +132,7 @@ const SalesOrder: React.FC = () => {
   const baseMainColumns: ColumnsType<SalesOrderItem> = useMemo(() => {
     return [
       {
-        title: '销售订单号',
+        title: '订单编号',
         dataIndex: 'orderNo',
         key: 'orderNo',
         width: getColumnWidth('orderNo', 180, mainColumnWidths),
@@ -190,14 +208,6 @@ const SalesOrder: React.FC = () => {
   const handleFieldSettings = () => {
     message.info('字段配置')
   }
-
-  const handleBatchOperation = useCallback((operation: string) => {
-    if (!selectedRowKeys.length) {
-      message.warning('请先选择要操作的订单')
-      return
-    }
-    message.info(`${operation}，已选择 ${selectedRowKeys.length} 条订单`)
-  }, [selectedRowKeys])
 
   return (
     <div className="sales-order-page">
@@ -296,13 +306,7 @@ const SalesOrder: React.FC = () => {
             <>
               <div className="toolbar-batch-left">
                 <span className="selected-count">已选择 {selectedRowKeys.length} 条订单</span>
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  onClick={() => handleBatchOperation('批量下推生产')}
-                >
-                  批量下推生产
-                </Button>
+                {/* 暂时移除：批量下推生产 */}
               </div>
               <Button type="text" className="toolbar-cancel-select" onClick={() => setSelectedRowKeys([])}>
                 取消选择
@@ -388,6 +392,7 @@ const SalesOrder: React.FC = () => {
             style: { cursor: 'default' },
             onClick: undefined,
           })}
+          rowClassName={(record) => (highlightOrderNo && record.orderNo === highlightOrderNo ? 'sales-order-highlight-row' : '')}
         />
       </Card>
     </div>

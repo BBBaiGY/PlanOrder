@@ -12,6 +12,11 @@
 ├── 📄 入口文件
 │   └── index.html             # 应用入口 HTML
 │
+├── 📄 根目录说明与脚本
+│   ├── CACHE_FIX.md           # 缓存与浏览器看到最新内容的说明
+│   ├── LIVE_SERVER_GUIDE.md   # Live Server 预览构建产物的使用指南
+│   └── stop-servers.sh        # 停止本地开发/预览服务的脚本
+│
 ├── 📚 文档文件
 │   ├── README.md              # 项目说明和使用指南（根目录）
 │   └── docs/                  # 文档目录
@@ -47,9 +52,10 @@
     │   ├── 📂 SalesOrder/             # 销售订单
     │   │   ├── index.tsx
     │   │   └── index.css
-    │   └── 📂 SalesDetail/            # 销售明细
-    │       ├── index.tsx
-    │       └── index.css
+│   └── 📂 SalesDetail/            # 销售明细
+│       ├── index.tsx
+│       ├── index.css
+│       └── DemandCalcDrawer.tsx    # 需求计算抽屉（子组件）
     │
     ├── 📂 types/              # 类型定义
     │   └── supply-demand.ts   # 供需相关类型
@@ -61,8 +67,9 @@
         └── index.tsx          # 路由定义
 
 统计信息：
-- 源代码文件：18 个（.tsx/.ts/.css）
+- 源代码文件：19 个（.tsx/.ts/.css）
   - 页面组件：5 个（MaterialControlWorkbench、PlanOrder、DemandCalculation、SalesOrder、SalesDetail）
+  - 页面子组件：1 个（SalesDetail/DemandCalcDrawer.tsx）
   - 公共组件：2 个（Layout、ResizableTitle）
   - 类型定义：1 个（supply-demand.ts）
   - 路由配置：1 个（routes/index.tsx）
@@ -73,11 +80,12 @@
   - 代码规范：1 个（.eslintrc.cjs）
   - 依赖管理：2 个（package.json、package-lock.json）
   - 版本控制：1 个（.gitignore）
-- 文档文件：5 个
+- 文档文件：5 个（docs/ + README）
   - README.md（根目录）
   - docs/STRUCTURE.md
   - docs/NAVIGATION_SPEC.md
   - docs/PROJECT_FILES.md
   - docs/FILE_TREE.txt
+- 根目录说明与脚本：3 个（CACHE_FIX.md、LIVE_SERVER_GUIDE.md、stop-servers.sh）
 - 入口文件：1 个（index.html）
-- 总计：约 31 个文件（不包括 node_modules 和 dist）
+- 总计：约 35 个文件（不包括 node_modules 和 dist）

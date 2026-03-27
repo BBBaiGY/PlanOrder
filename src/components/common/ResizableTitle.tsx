@@ -1,5 +1,6 @@
 import { Resizable } from 'react-resizable'
 import 'react-resizable/css/styles.css'
+import './ResizableTitle.css'
 
 interface ResizableTitleProps {
   onResize?: (e: unknown, data: { size: { width: number } }) => void

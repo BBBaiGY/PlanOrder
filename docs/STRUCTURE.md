@@ -16,6 +16,11 @@
 ├── 📄 入口文件
 │   └── index.html             # 应用入口 HTML 文件
 │
+├── 📄 根目录说明与脚本
+│   ├── CACHE_FIX.md           # 缓存与浏览器看到最新内容的说明
+│   ├── LIVE_SERVER_GUIDE.md   # Live Server 预览构建产物的使用指南
+│   └── stop-servers.sh        # 停止本地开发/预览服务的脚本
+│
 ├── 📚 文档文件
 │   ├── README.md              # 项目说明和使用指南（根目录）
 │   └── docs/                  # 文档目录
@@ -47,9 +52,10 @@
     │   ├── SalesOrder/                 # 销售订单页面
     │   │   ├── index.tsx
     │   │   └── index.css
-    │   └── SalesDetail/                # 销售明细页面
-    │       ├── index.tsx
-    │       └── index.css
+│   └── SalesDetail/                # 销售明细页面
+│       ├── index.tsx
+│       ├── index.css
+│       └── DemandCalcDrawer.tsx    # 需求计算抽屉（页面子组件）
     ├── types/             # TypeScript 类型定义
     │   └── supply-demand.ts  # 供需相关类型
     ├── constants/         # 常量定义
@@ -74,12 +80,16 @@
 | `docs/NAVIGATION_SPEC.md` | 导航栏规范文档 | 导航栏样式和配置规范 |
 | `docs/PROJECT_FILES.md` | 项目文件清单 | 详细文件列表和说明 |
 | `docs/FILE_TREE.txt` | 文件树视图 | 可视化文件结构 |
+| **根目录说明与脚本** | | |
+| `CACHE_FIX.md` | 缓存问题说明 | 浏览器/Vite 缓存与看到最新内容的解决方案 |
+| `LIVE_SERVER_GUIDE.md` | Live Server 使用指南 | 使用 Live Server 预览构建产物的步骤 |
+| `stop-servers.sh` | 停止服务脚本 | 停止本地开发/预览端口上的进程 |
 | **源代码目录** | | |
 | `src/**` | 前端源码根目录 | 所有源代码文件 |
 | `src/components/**` | 公共组件目录 | 可在多页面复用的 UI 组件 |
 | `src/components/Layout/**` | 布局组件 | 整体布局（侧栏、顶栏、面包屑、菜单） |
 | `src/components/common/**` | 通用组件 | 通用小组件（如可拖拽表头等） |
-| `src/pages/**` | 页面组件目录 | 按业务划分的页面，每页一个文件夹 |
+| `src/pages/**` | 页面组件目录 | 按业务划分的页面，每页一个文件夹；复杂页可有子组件（如 SalesDetail/DemandCalcDrawer.tsx） |
 | `src/types/**` | 类型定义目录 | 全局或跨页面共享的 TypeScript 类型 |
 | `src/constants/**` | 常量定义目录 | 路由路径、菜单 key 等常量 |
 | `src/routes/**` | 路由配置目录 | 路由配置与 `<Router>` 挂载 |
@@ -123,12 +133,13 @@ pages/PageName/
 
 ### 源代码文件
 - **页面组件**：5 个（MaterialControlWorkbench、PlanOrder、DemandCalculation、SalesOrder、SalesDetail）
+- **页面子组件**：1 个（SalesDetail/DemandCalcDrawer.tsx）
 - **公共组件**：2 个（Layout、ResizableTitle）
 - **类型定义**：1 个（supply-demand.ts）
 - **路由配置**：1 个（routes/index.tsx）
 - **常量定义**：1 个（routes.ts）
 - **核心文件**：3 个（main.tsx、App.tsx、index.css）
-- **总计**：18 个源代码文件（.tsx/.ts/.css）
+- **总计**：19 个源代码文件（.tsx/.ts/.css）
 
 ### 配置文件
 - **构建配置**：3 个（vite.config.ts、tsconfig.json、tsconfig.node.json）
@@ -144,14 +155,15 @@ pages/PageName/
   - docs/NAVIGATION_SPEC.md
   - docs/PROJECT_FILES.md
   - docs/FILE_TREE.txt
+- **根目录说明与脚本**：3 个（CACHE_FIX.md、LIVE_SERVER_GUIDE.md、stop-servers.sh）
 - **入口文件**：1 个（index.html）
-- **总计**：6 个文档和入口文件
+- **总计**：9 个文档/说明/入口文件
 
 ### 项目总计
-- **源代码文件**：18 个
+- **源代码文件**：19 个
 - **配置文件**：7 个
-- **文档文件**：6 个
-- **总计**：约 31 个文件（不包括 node_modules 和 dist）
+- **文档与说明**：9 个（含入口 index.html）
+- **总计**：约 35 个文件（不包括 node_modules 和 dist）
 
 ## 七、后续可扩展目录
 

@@ -13,6 +13,14 @@
 | `tsconfig.node.json` | TypeScript Node 环境配置 | ✅ |
 | `vite.config.ts` | Vite 构建工具配置 | ✅ |
 
+## 📄 根目录说明与脚本
+
+| 文件名 | 说明 | 状态 |
+|--------|------|------|
+| `CACHE_FIX.md` | 缓存与浏览器看到最新内容的解决方案 | ✅ |
+| `LIVE_SERVER_GUIDE.md` | Live Server 预览构建产物的使用指南 | ✅ |
+| `stop-servers.sh` | 停止本地开发/预览服务的脚本 | ✅ |
+
 ## 📚 文档文件
 
 | 文件名 | 说明 | 位置 |
@@ -40,11 +48,12 @@
 - `PlanOrder/` - 需求建议页面
 - `DemandCalculation/` - 需求计算页面
 - `SalesOrder/` - 销售订单页面
-- `SalesDetail/` - 销售明细页面
+- `SalesDetail/` - 销售明细页面（含子组件 `DemandCalcDrawer.tsx`，需求计算抽屉）
 
 每个页面目录包含：
 - `index.tsx` - 页面组件
 - `index.css` - 页面样式
+- （可选）页面专属子组件，如 `SalesDetail/DemandCalcDrawer.tsx`
 
 ### types/ 类型定义
 - `supply-demand.ts` - 供需相关的 TypeScript 类型定义
@@ -64,13 +73,14 @@
 
 ## 📊 文件统计
 
-### 源代码文件（18 个）
+### 源代码文件（19 个）
 - **页面组件**：5 个
   - MaterialControlWorkbench（供需检查）
   - PlanOrder（需求建议）
   - DemandCalculation（需求计算）
   - SalesOrder（销售订单）
   - SalesDetail（销售明细）
+- **页面子组件**：1 个（SalesDetail/DemandCalcDrawer.tsx，需求计算抽屉）
 - **公共组件**：2 个
   - Layout（布局组件）
   - ResizableTitle（可调整大小的表头）
@@ -92,15 +102,19 @@
 - docs/PROJECT_FILES.md
 - docs/FILE_TREE.txt
 
+### 根目录说明与脚本（3 个）
+- CACHE_FIX.md、LIVE_SERVER_GUIDE.md、stop-servers.sh
+
 ### 入口文件（1 个）
 - index.html
 
 ### 总计
-- **源代码文件**：18 个
+- **源代码文件**：19 个
 - **配置文件**：7 个
 - **文档文件**：5 个
+- **根目录说明与脚本**：3 个
 - **入口文件**：1 个
-- **总计**：约 31 个文件（不包括 node_modules 和 dist）
+- **总计**：约 35 个文件（不包括 node_modules 和 dist）
 
 ## 🔍 文件组织原则
 

@@ -261,3 +261,7 @@
   position: relative;
 }
 
+.sales-order-page .ant-table-tbody > tr.sales-order-highlight-row > td {
+  background: #fffbe6 !important;
+}
+

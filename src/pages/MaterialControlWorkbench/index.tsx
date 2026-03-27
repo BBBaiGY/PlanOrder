@@ -11,6 +11,10 @@ import {
   Input,
   InputNumber,
   message,
+  Modal,
+  Form,
+  Checkbox,
+  Typography,
 } from 'antd'
 import {
   ReloadOutlined,
@@ -24,7 +28,9 @@ import {
   ToolOutlined,
 } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
-import type { MaterialItem, SupplyDemandDetail } from '@/types/supply-demand'
+import type { MaterialItem, SupplyDemandDetail, TimeDataItem } from '@/types/supply-demand'
+import type { DemandCalcRule } from '@/pages/SalesDetail/DemandCalcDrawer'
+import { defaultRule, WAREHOUSE_OPTIONS, loadLastRule, persistLastRule } from '@/pages/SalesDetail/DemandCalcDrawer'
 import ResizableTitle from '@/components/common/ResizableTitle'
 import './index.css'
 
@@ -48,6 +54,10 @@ const MaterialControlWorkbench: React.FC = () => {
   const resizeStartYRef = useRef<number>(0)
   const resizeStartHeightRef = useRef<number>(500)
   const isResizingRef = useRef<boolean>(false)
+
+  const [supplyRuleModalOpen, setSupplyRuleModalOpen] = useState(false)
+  const [supplyRule, setSupplyRule] = useState<DemandCalcRule>(defaultRule)
+  const [supplyRuleForm] = Form.useForm<DemandCalcRule>()
   
   // 列宽状态管理
   const [mainColumnWidths, setMainColumnWidths] = useState<Record<string, number>>({})
@@ -90,274 +100,231 @@ const MaterialControlWorkbench: React.FC = () => {
     }
   }, [selectedMaterial, detailTableHeight])
 
-  // 模拟物料数据
+  // 模拟物料数据：按当前日期动态生成 timeData，保证主表日期列有数据；物料名称与规格更贴近业务
   const materialData = useMemo<MaterialItem[]>(() => {
-    return [
-    {
-      key: '1',
-      materialCode: 'BB00001',
-      materialName: '成品A',
-      specification: '100*50*30mm',
-      unit: '件',
-      safetyStock: 50,
-      currentStock: 100,
-      shortageQty: 0,
-      supplier: '供应商A',
-      workshop: '车间1',
-      expanded: false,
-      timeData: [
-        { date: '期初', demand: 0, supply: 0, balance: 100 },
-        { date: '2026-01-25', demand: 50, supply: 0, balance: 50 },
-        { date: '2026-01-26', demand: 30, supply: 100, balance: 120 },
-        { date: '2026-01-27', demand: 20, supply: 0, balance: 100 },
-        { date: '2026-01-28', demand: 40, supply: 50, balance: 110 },
-        { date: '2026-01-29', demand: 25, supply: 0, balance: 85 },
-        { date: '2026-01-30', demand: 35, supply: 80, balance: 130 },
-      ],
-    },
-    {
-      key: '2',
-      materialCode: 'BB00002',
-      materialName: '成品B',
-      specification: '120*60*40mm',
-      unit: '件',
-      safetyStock: 50,
-      currentStock: 80,
-      shortageQty: 0,
-      supplier: '供应商B',
-      workshop: '车间1',
-      expanded: false,
-      timeData: [
-        { date: '期初', demand: 0, supply: 0, balance: 80 },
-        { date: '2026-01-25', demand: 40, supply: 0, balance: 40 },
-        { date: '2026-01-26', demand: 20, supply: 60, balance: 80 },
-        { date: '2026-01-27', demand: 30, supply: 0, balance: 50 },
-        { date: '2026-01-28', demand: 25, supply: 40, balance: 65 },
-        { date: '2026-01-29', demand: 35, supply: 0, balance: 30 },
-        { date: '2026-01-30', demand: 15, supply: 50, balance: 65 },
-      ],
-    },
-    {
-      key: '3',
-      materialCode: 'BB00003',
-      materialName: '半成品01',
-      specification: '80*40*20mm',
-      unit: '件',
-      safetyStock: 100,
-      currentStock: 0,
-      shortageQty: 385,
-      supplier: '供应商C',
-      workshop: '车间2',
-      expanded: false,
-      timeData: [
-        { date: '期初', demand: 0, supply: 0, balance: 0 },
-        { date: '2026-01-25', demand: 385, supply: 0, balance: -385 },
-        { date: '2026-01-26', demand: 200, supply: 150, balance: -435 },
-        { date: '2026-01-27', demand: 150, supply: 0, balance: -585 },
-        { date: '2026-01-28', demand: 100, supply: 300, balance: -385 },
-        { date: '2026-01-29', demand: 80, supply: 0, balance: -465 },
-        { date: '2026-01-30', demand: 120, supply: 500, balance: -85 },
-      ],
-    },
-    {
-      key: '4',
-      materialCode: 'BB00004',
-      materialName: '半成品02',
-      specification: '90*45*25mm',
-      unit: '件',
-      safetyStock: 100,
-      currentStock: 50,
-      shortageQty: 0,
-      supplier: '供应商D',
-      workshop: '车间2',
-      expanded: false,
-      timeData: [
-        { date: '期初', demand: 0, supply: 0, balance: 50 },
-        { date: '2026-01-25', demand: 30, supply: 0, balance: 20 },
-        { date: '2026-01-26', demand: 20, supply: 40, balance: 40 },
-        { date: '2026-01-27', demand: 25, supply: 0, balance: 15 },
-        { date: '2026-01-28', demand: 35, supply: 50, balance: 30 },
-        { date: '2026-01-29', demand: 15, supply: 0, balance: 15 },
-        { date: '2026-01-30', demand: 20, supply: 60, balance: 55 },
-      ],
-    },
-    {
-      key: '5',
-      materialCode: 'BB00005',
-      materialName: '原材料01',
-      specification: 'Q235钢材',
-      unit: 'kg',
-      safetyStock: 200,
-      currentStock: 150,
-      shortageQty: 0,
-      supplier: '供应商E',
-      workshop: '',
-      expanded: false,
-      timeData: [
-        { date: '期初', demand: 0, supply: 0, balance: 150 },
-        { date: '2026-01-25', demand: 80, supply: 0, balance: 70 },
-        { date: '2026-01-26', demand: 60, supply: 200, balance: 210 },
-        { date: '2026-01-27', demand: 50, supply: 0, balance: 160 },
-        { date: '2026-01-28', demand: 70, supply: 150, balance: 240 },
-        { date: '2026-01-29', demand: 40, supply: 0, balance: 200 },
-        { date: '2026-01-30', demand: 90, supply: 180, balance: 290 },
-      ],
-    },
-    {
-      key: '6',
-      materialCode: 'BB00006',
-      materialName: '成品C',
-      specification: '150*80*50mm',
-      unit: '件',
-      safetyStock: 30,
-      currentStock: 45,
-      shortageQty: 0,
-      supplier: '供应商A',
-      workshop: '车间1',
-      expanded: false,
-      timeData: [
-        { date: '期初', demand: 0, supply: 0, balance: 45 },
-        { date: '2026-01-25', demand: 20, supply: 0, balance: 25 },
-        { date: '2026-01-26', demand: 15, supply: 30, balance: 40 },
-        { date: '2026-01-27', demand: 10, supply: 0, balance: 30 },
-        { date: '2026-01-28', demand: 25, supply: 20, balance: 25 },
-        { date: '2026-01-29', demand: 12, supply: 0, balance: 13 },
-        { date: '2026-01-30', demand: 18, supply: 35, balance: 30 },
-      ],
-    },
-    {
-      key: '7',
-      materialCode: 'BB00007',
-      materialName: '半成品03',
-      specification: '70*35*18mm',
-      unit: '件',
-      safetyStock: 80,
-      currentStock: 120,
-      shortageQty: 0,
-      supplier: '供应商C',
-      workshop: '车间2',
-      expanded: false,
-      timeData: [
-        { date: '期初', demand: 0, supply: 0, balance: 120 },
-        { date: '2026-01-25', demand: 50, supply: 0, balance: 70 },
-        { date: '2026-01-26', demand: 30, supply: 80, balance: 120 },
-        { date: '2026-01-27', demand: 40, supply: 0, balance: 80 },
-        { date: '2026-01-28', demand: 35, supply: 60, balance: 105 },
-        { date: '2026-01-29', demand: 25, supply: 0, balance: 80 },
-        { date: '2026-01-30', demand: 45, supply: 70, balance: 105 },
-      ],
-    },
-    {
-      key: '8',
-      materialCode: 'BB00008',
-      materialName: '原材料02',
-      specification: '304不锈钢',
-      unit: 'kg',
-      safetyStock: 150,
-      currentStock: 200,
-      shortageQty: 0,
-      supplier: '供应商F',
-      workshop: '',
-      expanded: false,
-      timeData: [
-        { date: '期初', demand: 0, supply: 0, balance: 200 },
-        { date: '2026-01-25', demand: 60, supply: 0, balance: 140 },
-        { date: '2026-01-26', demand: 40, supply: 100, balance: 200 },
-        { date: '2026-01-27', demand: 50, supply: 0, balance: 150 },
-        { date: '2026-01-28', demand: 70, supply: 120, balance: 200 },
-        { date: '2026-01-29', demand: 30, supply: 0, balance: 170 },
-        { date: '2026-01-30', demand: 80, supply: 150, balance: 240 },
-      ],
-    },
-    {
-      key: '9',
-      materialCode: 'BB00009',
-      materialName: '成品D',
-      specification: '200*100*60mm',
-      unit: '件',
-      safetyStock: 20,
-      currentStock: 15,
-      shortageQty: 5,
-      supplier: '供应商B',
-      workshop: '车间1',
-      expanded: false,
-      timeData: [
-        { date: '期初', demand: 0, supply: 0, balance: 15 },
-        { date: '2026-01-25', demand: 10, supply: 0, balance: 5 },
-        { date: '2026-01-26', demand: 8, supply: 15, balance: 12 },
-        { date: '2026-01-27', demand: 12, supply: 0, balance: 0 },
-        { date: '2026-01-28', demand: 15, supply: 20, balance: 5 },
-        { date: '2026-01-29', demand: 6, supply: 0, balance: -1 },
-        { date: '2026-01-30', demand: 10, supply: 25, balance: 14 },
-      ],
-    },
-    {
-      key: '10',
-      materialCode: 'BB00010',
-      materialName: '半成品04',
-      specification: '110*55*30mm',
-      unit: '件',
-      safetyStock: 60,
-      currentStock: 30,
-      shortageQty: 30,
-      supplier: '供应商D',
-      workshop: '车间2',
-      expanded: false,
-      timeData: [
-        { date: '期初', demand: 0, supply: 0, balance: 30 },
-        { date: '2026-01-25', demand: 40, supply: 0, balance: -10 },
-        { date: '2026-01-26', demand: 25, supply: 30, balance: -5 },
-        { date: '2026-01-27', demand: 30, supply: 0, balance: -35 },
-        { date: '2026-01-28', demand: 20, supply: 50, balance: -5 },
-        { date: '2026-01-29', demand: 35, supply: 0, balance: -40 },
-        { date: '2026-01-30', demand: 15, supply: 60, balance: 5 },
-      ],
-    },
-    {
-      key: '11',
-      materialCode: 'BB00011',
-      materialName: '原材料03',
-      specification: '6061铝合金',
-      unit: 'kg',
-      safetyStock: 100,
-      currentStock: 180,
-      shortageQty: 0,
-      supplier: '供应商G',
-      workshop: '',
-      expanded: false,
-      timeData: [
-        { date: '期初', demand: 0, supply: 0, balance: 180 },
-        { date: '2026-01-25', demand: 50, supply: 0, balance: 130 },
-        { date: '2026-01-26', demand: 40, supply: 80, balance: 170 },
-        { date: '2026-01-27', demand: 60, supply: 0, balance: 110 },
-        { date: '2026-01-28', demand: 45, supply: 100, balance: 165 },
-        { date: '2026-01-29', demand: 35, supply: 0, balance: 130 },
-        { date: '2026-01-30', demand: 55, supply: 120, balance: 195 },
-      ],
-    },
-    {
-      key: '12',
-      materialCode: 'BB00012',
-      materialName: '成品E',
-      specification: '180*90*55mm',
-      unit: '件',
-      safetyStock: 40,
-      currentStock: 60,
-      shortageQty: 0,
-      supplier: '供应商A',
-      workshop: '车间1',
-      expanded: false,
-      timeData: [
-        { date: '期初', demand: 0, supply: 0, balance: 60 },
-        { date: '2026-01-25', demand: 25, supply: 0, balance: 35 },
-        { date: '2026-01-26', demand: 20, supply: 40, balance: 55 },
-        { date: '2026-01-27', demand: 15, supply: 0, balance: 40 },
-        { date: '2026-01-28', demand: 30, supply: 25, balance: 35 },
-        { date: '2026-01-29', demand: 18, supply: 0, balance: 17 },
-        { date: '2026-01-30', demand: 22, supply: 45, balance: 40 },
-      ],
+    const today = dayjs()
+    const buildTimeData = (
+      initialBalance: number,
+      dailyDemand: number[],
+      dailySupply: number[]
+    ): TimeDataItem[] => {
+      const rows: TimeDataItem[] = [{ date: '期初', demand: 0, supply: 0, balance: initialBalance }]
+      let balance = initialBalance
+      for (let i = 0; i < 7; i++) {
+        const d = dailyDemand[i] ?? 0
+        const s = dailySupply[i] ?? 0
+        balance = balance + s - d
+        rows.push({
+          date: today.add(i, 'day').format('YYYY-MM-DD'),
+          demand: d,
+          supply: s,
+          balance,
+        })
+      }
+      return rows
+    }
+
+    const rawData: MaterialItem[] = [
+      {
+        key: '1',
+        materialCode: 'BB00001',
+        materialName: '智能网关机箱',
+        specification: '100×50×30mm 钣金',
+        unit: '件',
+        safetyStock: 50,
+        currentStock: 100,
+        shortageQty: 0,
+        supplier: '华强钣金',
+        workshop: '车间1',
+        expanded: false,
+        timeData: buildTimeData(100, [50, 30, 20, 40, 25, 35, 20], [0, 100, 0, 50, 0, 80, 60]),
+        planNew: 60, purchaseInTransit: 100, productionWip: 40,
+        salesPendingIssue: 30, planPendingPick: 20, productionPendingPick: 15,
+      },
+      {
+        key: '2',
+        materialCode: 'BB00002',
+        materialName: '工业接线盒',
+        specification: '120×60×40mm 阻燃',
+        unit: '件',
+        safetyStock: 50,
+        currentStock: 80,
+        shortageQty: 0,
+        supplier: '远东电气',
+        workshop: '车间1',
+        expanded: false,
+        timeData: buildTimeData(80, [40, 20, 30, 25, 35, 15, 10], [0, 60, 0, 40, 0, 50, 45]),
+        planNew: 40, purchaseInTransit: 60, productionWip: 0,
+        salesPendingIssue: 20, planPendingPick: 15, productionPendingPick: 10,
+      },
+      {
+        key: '3',
+        materialCode: 'BB00003',
+        materialName: '机加工支架',
+        specification: '80×40×20mm 冷轧',
+        unit: '件',
+        safetyStock: 100,
+        currentStock: 0,
+        shortageQty: 385,
+        supplier: '精工机械',
+        workshop: '车间2',
+        expanded: false,
+        timeData: buildTimeData(0, [385, 200, 150, 100, 80, 120, 60], [0, 150, 0, 300, 0, 500, 200]),
+        planNew: 200, purchaseInTransit: 150, productionWip: 300,
+        salesPendingIssue: 0, planPendingPick: 100, productionPendingPick: 80,
+      },
+      {
+        key: '4',
+        materialCode: 'BB00004',
+        materialName: '焊接组件',
+        specification: '90×45×25mm',
+        unit: '件',
+        safetyStock: 100,
+        currentStock: 50,
+        shortageQty: 0,
+        supplier: '众合焊接',
+        workshop: '车间2',
+        expanded: false,
+        timeData: buildTimeData(50, [30, 20, 25, 35, 15, 20, 18], [0, 40, 0, 50, 0, 60, 40]),
+        planNew: 30, purchaseInTransit: 50, productionWip: 20,
+        salesPendingIssue: 10, planPendingPick: 15, productionPendingPick: 12,
+      },
+      {
+        key: '5',
+        materialCode: 'BB00005',
+        materialName: 'Q235 钢材',
+        specification: '板材/卷料',
+        unit: 'kg',
+        safetyStock: 200,
+        currentStock: 150,
+        shortageQty: 0,
+        supplier: '宝钢经销',
+        workshop: '',
+        expanded: false,
+        timeData: buildTimeData(150, [80, 60, 50, 70, 40, 90, 55], [0, 200, 0, 150, 0, 180, 100]),
+        planNew: 100, purchaseInTransit: 200, productionWip: 0,
+        salesPendingIssue: 50, planPendingPick: 80, productionPendingPick: 60,
+      },
+      {
+        key: '6',
+        materialCode: 'BB00006',
+        materialName: '控制柜体',
+        specification: '150×80×50mm',
+        unit: '件',
+        safetyStock: 30,
+        currentStock: 45,
+        shortageQty: 0,
+        supplier: '华强钣金',
+        workshop: '车间1',
+        expanded: false,
+        timeData: buildTimeData(45, [20, 15, 10, 25, 12, 18, 8], [0, 30, 0, 20, 0, 35, 25]),
+        planNew: 20, purchaseInTransit: 30, productionWip: 10,
+        salesPendingIssue: 8, planPendingPick: 5, productionPendingPick: 6,
+      },
+      {
+        key: '7',
+        materialCode: 'BB00007',
+        materialName: '喷涂件',
+        specification: '70×35×18mm',
+        unit: '件',
+        safetyStock: 80,
+        currentStock: 120,
+        shortageQty: 0,
+        supplier: '精工机械',
+        workshop: '车间2',
+        expanded: false,
+        timeData: buildTimeData(120, [50, 30, 40, 35, 25, 45, 30], [0, 80, 0, 60, 0, 70, 50]),
+        planNew: 50, purchaseInTransit: 0, productionWip: 70,
+        salesPendingIssue: 25, planPendingPick: 30, productionPendingPick: 20,
+      },
+      {
+        key: '8',
+        materialCode: 'BB00008',
+        materialName: '304 不锈钢',
+        specification: '板/管',
+        unit: 'kg',
+        safetyStock: 150,
+        currentStock: 200,
+        shortageQty: 0,
+        supplier: '太钢经销',
+        workshop: '',
+        expanded: false,
+        timeData: buildTimeData(200, [60, 40, 50, 70, 30, 80, 45], [0, 100, 0, 120, 0, 150, 90]),
+        planNew: 80, purchaseInTransit: 100, productionWip: 0,
+        salesPendingIssue: 40, planPendingPick: 60, productionPendingPick: 30,
+      },
+      {
+        key: '9',
+        materialCode: 'BB00009',
+        materialName: '配电柜门板',
+        specification: '200×100×60mm',
+        unit: '件',
+        safetyStock: 20,
+        currentStock: 15,
+        shortageQty: 5,
+        supplier: '远东电气',
+        workshop: '车间1',
+        expanded: false,
+        timeData: buildTimeData(15, [10, 8, 12, 15, 6, 10, 5], [0, 15, 0, 20, 0, 25, 18]),
+        planNew: 15, purchaseInTransit: 25, productionWip: 0,
+        salesPendingIssue: 10, planPendingPick: 8, productionPendingPick: 5,
+      },
+      {
+        key: '10',
+        materialCode: 'BB00010',
+        materialName: '装配底座',
+        specification: '110×55×30mm',
+        unit: '件',
+        safetyStock: 60,
+        currentStock: 30,
+        shortageQty: 30,
+        supplier: '众合焊接',
+        workshop: '车间2',
+        expanded: false,
+        timeData: buildTimeData(30, [40, 25, 30, 20, 35, 15, 12], [0, 30, 0, 50, 0, 60, 45]),
+        planNew: 25, purchaseInTransit: 30, productionWip: 50,
+        salesPendingIssue: 15, planPendingPick: 20, productionPendingPick: 18,
+      },
+      {
+        key: '11',
+        materialCode: 'BB00011',
+        materialName: '6061 铝合金',
+        specification: '型材',
+        unit: 'kg',
+        safetyStock: 100,
+        currentStock: 180,
+        shortageQty: 0,
+        supplier: '中铝经销',
+        workshop: '',
+        expanded: false,
+        timeData: buildTimeData(180, [50, 40, 60, 45, 35, 55, 40], [0, 80, 0, 100, 0, 120, 85]),
+        planNew: 60, purchaseInTransit: 80, productionWip: 0,
+        salesPendingIssue: 30, planPendingPick: 50, productionPendingPick: 35,
+      },
+      {
+        key: '12',
+        materialCode: 'BB00012',
+        materialName: 'PLC 安装板',
+        specification: '180×90×55mm',
+        unit: '件',
+        safetyStock: 40,
+        currentStock: 60,
+        shortageQty: 0,
+        supplier: '华强钣金',
+        workshop: '车间1',
+        expanded: false,
+        timeData: buildTimeData(60, [25, 20, 15, 30, 18, 22, 14], [0, 40, 0, 25, 0, 45, 35]),
+        planNew: 35, purchaseInTransit: 40, productionWip: 25,
+        salesPendingIssue: 15, planPendingPick: 10, productionPendingPick: 8,
       },
     ]
+
+    return rawData.map((item) => {
+      const expectedIn = (item.planNew || 0) + (item.purchaseInTransit || 0) + (item.productionWip || 0)
+      const expectedOut = (item.salesPendingIssue || 0) + (item.planPendingPick || 0) + (item.productionPendingPick || 0)
+      const availableStock = (item.currentStock || 0) + expectedIn - expectedOut
+      return { ...item, expectedIn, expectedOut, availableStock }
+    })
   }, [])
 
   // 将物料数据转换为多行格式（需求、供给、结存分别一行）
@@ -789,8 +756,51 @@ const MaterialControlWorkbench: React.FC = () => {
           exception: '',
         },
       ],
+      'BB00006': [
+        { key: '24', type: '需求', docType: '销售订单', docDate: dayjs().format('YYYY-MM-DD'), docNo: 'XSDD-2026-0088', docStatus: '已审核', lineNo: 1, unit: '件', qty: 20, executedQty: 0, unexecutedQty: 20, exception: '' },
+        { key: '25', type: '需求', docType: '生产工单', docDate: dayjs().add(2, 'day').format('YYYY-MM-DD'), docNo: 'SCRW-2026-0012', docStatus: '已审核', lineNo: 1, unit: '件', qty: 10, executedQty: 0, unexecutedQty: 10, exception: '' },
+        { key: '26', type: '供给', docType: '采购订单', docDate: dayjs().add(1, 'day').format('YYYY-MM-DD'), docNo: 'CGDD-2026-0015', docStatus: '已审核', lineNo: 1, unit: '件', qty: 30, executedQty: 0, unexecutedQty: 30, exception: '' },
+        { key: '27', type: '供给', docType: '生产入库', docDate: dayjs().add(5, 'day').format('YYYY-MM-DD'), docNo: 'SCRK-2026-0003', docStatus: '已审核', lineNo: 1, unit: '件', qty: 35, executedQty: 0, unexecutedQty: 35, exception: '' },
+      ],
+      'BB00007': [
+        { key: '28', type: '需求', docType: '生产工单', docDate: dayjs().format('YYYY-MM-DD'), docNo: 'SCRW-2026-0015', docStatus: '已审核', lineNo: 1, unit: '件', qty: 50, executedQty: 0, unexecutedQty: 50, exception: '' },
+        { key: '29', type: '需求', docType: '生产工单', docDate: dayjs().add(3, 'day').format('YYYY-MM-DD'), docNo: 'SCRW-2026-0018', docStatus: '已审核', lineNo: 1, unit: '件', qty: 40, executedQty: 0, unexecutedQty: 40, exception: '' },
+        { key: '30', type: '供给', docType: '委外入库', docDate: dayjs().add(1, 'day').format('YYYY-MM-DD'), docNo: 'WWRK-2026-0002', docStatus: '已审核', lineNo: 1, unit: '件', qty: 80, executedQty: 0, unexecutedQty: 80, exception: '' },
+        { key: '31', type: '供给', docType: '生产入库', docDate: dayjs().add(5, 'day').format('YYYY-MM-DD'), docNo: 'SCRK-2026-0005', docStatus: '已审核', lineNo: 1, unit: '件', qty: 70, executedQty: 0, unexecutedQty: 70, exception: '' },
+      ],
+      'BB00008': [
+        { key: '32', type: '需求', docType: '生产工单', docDate: dayjs().format('YYYY-MM-DD'), docNo: 'SCRW-2026-0020', docStatus: '已审核', lineNo: 1, unit: 'kg', qty: 60, executedQty: 0, unexecutedQty: 60, exception: '' },
+        { key: '33', type: '需求', docType: '生产工单', docDate: dayjs().add(2, 'day').format('YYYY-MM-DD'), docNo: 'SCRW-2026-0022', docStatus: '已审核', lineNo: 1, unit: 'kg', qty: 50, executedQty: 0, unexecutedQty: 50, exception: '' },
+        { key: '34', type: '供给', docType: '采购订单', docDate: dayjs().add(1, 'day').format('YYYY-MM-DD'), docNo: 'CGDD-2026-0025', docStatus: '已审核', lineNo: 1, unit: 'kg', qty: 100, executedQty: 0, unexecutedQty: 100, exception: '' },
+        { key: '35', type: '供给', docType: '采购入库', docDate: dayjs().add(5, 'day').format('YYYY-MM-DD'), docNo: 'CGRK-2026-0008', docStatus: '已审核', lineNo: 1, unit: 'kg', qty: 150, executedQty: 0, unexecutedQty: 150, exception: '' },
+      ],
+      'BB00009': [
+        { key: '36', type: '需求', docType: '销售订单', docDate: dayjs().format('YYYY-MM-DD'), docNo: 'XSDD-2026-0092', docStatus: '已审核', lineNo: 1, unit: '件', qty: 10, executedQty: 0, unexecutedQty: 10, exception: '' },
+        { key: '37', type: '需求', docType: '生产工单', docDate: dayjs().add(2, 'day').format('YYYY-MM-DD'), docNo: 'SCRW-2026-0025', docStatus: '已审核', lineNo: 1, unit: '件', qty: 12, executedQty: 0, unexecutedQty: 12, exception: '' },
+        { key: '38', type: '供给', docType: '采购订单', docDate: dayjs().add(1, 'day').format('YYYY-MM-DD'), docNo: 'CGDD-2026-0030', docStatus: '已审核', lineNo: 1, unit: '件', qty: 15, executedQty: 0, unexecutedQty: 15, exception: '' },
+        { key: '39', type: '供给', docType: '采购订单', docDate: dayjs().add(5, 'day').format('YYYY-MM-DD'), docNo: 'CGDD-2026-0032', docStatus: '已审核', lineNo: 1, unit: '件', qty: 25, executedQty: 0, unexecutedQty: 25, exception: '' },
+      ],
+      'BB00010': [
+        { key: '40', type: '需求', docType: '生产工单', docDate: dayjs().format('YYYY-MM-DD'), docNo: 'SCRW-2026-0030', docStatus: '已审核', lineNo: 1, unit: '件', qty: 40, executedQty: 0, unexecutedQty: 40, exception: '' },
+        { key: '41', type: '需求', docType: '生产工单', docDate: dayjs().add(2, 'day').format('YYYY-MM-DD'), docNo: 'SCRW-2026-0032', docStatus: '已审核', lineNo: 1, unit: '件', qty: 30, executedQty: 0, unexecutedQty: 30, exception: '' },
+        { key: '42', type: '供给', docType: '委外入库', docDate: dayjs().add(1, 'day').format('YYYY-MM-DD'), docNo: 'WWRK-2026-0005', docStatus: '已审核', lineNo: 1, unit: '件', qty: 30, executedQty: 0, unexecutedQty: 30, exception: '' },
+        { key: '43', type: '供给', docType: '采购订单', docDate: dayjs().add(4, 'day').format('YYYY-MM-DD'), docNo: 'CGDD-2026-0038', docStatus: '已审核', lineNo: 1, unit: '件', qty: 50, executedQty: 0, unexecutedQty: 50, exception: '' },
+        { key: '44', type: '供给', docType: '生产入库', docDate: dayjs().add(6, 'day').format('YYYY-MM-DD'), docNo: 'SCRK-2026-0010', docStatus: '已审核', lineNo: 1, unit: '件', qty: 60, executedQty: 0, unexecutedQty: 60, exception: '' },
+      ],
+      'BB00011': [
+        { key: '45', type: '需求', docType: '生产工单', docDate: dayjs().format('YYYY-MM-DD'), docNo: 'SCRW-2026-0040', docStatus: '已审核', lineNo: 1, unit: 'kg', qty: 50, executedQty: 0, unexecutedQty: 50, exception: '' },
+        { key: '46', type: '需求', docType: '生产工单', docDate: dayjs().add(3, 'day').format('YYYY-MM-DD'), docNo: 'SCRW-2026-0042', docStatus: '已审核', lineNo: 1, unit: 'kg', qty: 60, executedQty: 0, unexecutedQty: 60, exception: '' },
+        { key: '47', type: '供给', docType: '采购订单', docDate: dayjs().add(1, 'day').format('YYYY-MM-DD'), docNo: 'CGDD-2026-0045', docStatus: '已审核', lineNo: 1, unit: 'kg', qty: 80, executedQty: 0, unexecutedQty: 80, exception: '' },
+        { key: '48', type: '供给', docType: '采购入库', docDate: dayjs().add(5, 'day').format('YYYY-MM-DD'), docNo: 'CGRK-2026-0012', docStatus: '已审核', lineNo: 1, unit: 'kg', qty: 120, executedQty: 0, unexecutedQty: 120, exception: '' },
+      ],
+      'BB00012': [
+        { key: '49', type: '需求', docType: '销售订单', docDate: dayjs().format('YYYY-MM-DD'), docNo: 'XSDD-2026-0098', docStatus: '已审核', lineNo: 1, unit: '件', qty: 25, executedQty: 0, unexecutedQty: 25, exception: '' },
+        { key: '50', type: '需求', docType: '生产工单', docDate: dayjs().add(3, 'day').format('YYYY-MM-DD'), docNo: 'SCRW-2026-0050', docStatus: '已审核', lineNo: 1, unit: '件', qty: 15, executedQty: 0, unexecutedQty: 15, exception: '' },
+        { key: '51', type: '供给', docType: '采购订单', docDate: dayjs().add(1, 'day').format('YYYY-MM-DD'), docNo: 'CGDD-2026-0052', docStatus: '已审核', lineNo: 1, unit: '件', qty: 40, executedQty: 0, unexecutedQty: 40, exception: '' },
+        { key: '52', type: '供给', docType: '生产入库', docDate: dayjs().add(5, 'day').format('YYYY-MM-DD'), docNo: 'SCRK-2026-0015', docStatus: '已审核', lineNo: 1, unit: '件', qty: 45, executedQty: 0, unexecutedQty: 45, exception: '' },
+      ],
     }
-    
+
     return detailDataMap[materialCode] || [
       {
         key: 'default-1',
@@ -943,7 +953,7 @@ const MaterialControlWorkbench: React.FC = () => {
         },
       },
       {
-        title: '即时库存',
+        title: '现有库存',
         dataIndex: 'currentStock',
         key: 'currentStock',
         width: getColumnWidth('currentStock', 100, mainColumnWidths),
@@ -1035,6 +1045,127 @@ const MaterialControlWorkbench: React.FC = () => {
           const value = record.totalValue
           const isNegative = record.rowType === '结存' && value < 0
           return <span style={{ color: isNegative ? '#ff4d4f' : '#333' }}>{value}</span>
+        },
+      },
+      {
+        title: '预计可用库存',
+        dataIndex: 'availableStock',
+        key: 'availableStock',
+        width: getColumnWidth('availableStock', 120, mainColumnWidths),
+        align: 'right',
+        render: (text) => {
+          const value = text ?? 0
+          return <span style={{ color: value < 0 ? '#ff4d4f' : '#333', fontWeight: 600 }}>{value}</span>
+        },
+        onCell: (record, index) => {
+          if (index === undefined) return {}
+          const isFirstRow = index === 0 || transformedMaterialData[index - 1]?.materialCode !== record.materialCode
+          const rowCount = transformedMaterialData.filter(item => item.materialCode === record.materialCode).length
+          return { rowSpan: isFirstRow ? rowCount : 0 }
+        },
+      },
+      {
+        title: '预计入库',
+        dataIndex: 'expectedIn',
+        key: 'expectedIn',
+        width: getColumnWidth('expectedIn', 100, mainColumnWidths),
+        align: 'right',
+        onCell: (record, index) => {
+          if (index === undefined) return {}
+          const isFirstRow = index === 0 || transformedMaterialData[index - 1]?.materialCode !== record.materialCode
+          const rowCount = transformedMaterialData.filter(item => item.materialCode === record.materialCode).length
+          return { rowSpan: isFirstRow ? rowCount : 0 }
+        },
+      },
+      {
+        title: '预计出库',
+        dataIndex: 'expectedOut',
+        key: 'expectedOut',
+        width: getColumnWidth('expectedOut', 100, mainColumnWidths),
+        align: 'right',
+        onCell: (record, index) => {
+          if (index === undefined) return {}
+          const isFirstRow = index === 0 || transformedMaterialData[index - 1]?.materialCode !== record.materialCode
+          const rowCount = transformedMaterialData.filter(item => item.materialCode === record.materialCode).length
+          return { rowSpan: isFirstRow ? rowCount : 0 }
+        },
+      },
+      {
+        title: '销售待发',
+        dataIndex: 'salesPendingIssue',
+        key: 'salesPendingIssue',
+        width: getColumnWidth('salesPendingIssue', 100, mainColumnWidths),
+        align: 'right',
+        onCell: (record, index) => {
+          if (index === undefined) return {}
+          const isFirstRow = index === 0 || transformedMaterialData[index - 1]?.materialCode !== record.materialCode
+          const rowCount = transformedMaterialData.filter(item => item.materialCode === record.materialCode).length
+          return { rowSpan: isFirstRow ? rowCount : 0 }
+        },
+      },
+      {
+        title: '计划新增',
+        dataIndex: 'planNew',
+        key: 'planNew',
+        width: getColumnWidth('planNew', 100, mainColumnWidths),
+        align: 'right',
+        onCell: (record, index) => {
+          if (index === undefined) return {}
+          const isFirstRow = index === 0 || transformedMaterialData[index - 1]?.materialCode !== record.materialCode
+          const rowCount = transformedMaterialData.filter(item => item.materialCode === record.materialCode).length
+          return { rowSpan: isFirstRow ? rowCount : 0 }
+        },
+      },
+      {
+        title: '计划待领',
+        dataIndex: 'planPendingPick',
+        key: 'planPendingPick',
+        width: getColumnWidth('planPendingPick', 100, mainColumnWidths),
+        align: 'right',
+        onCell: (record, index) => {
+          if (index === undefined) return {}
+          const isFirstRow = index === 0 || transformedMaterialData[index - 1]?.materialCode !== record.materialCode
+          const rowCount = transformedMaterialData.filter(item => item.materialCode === record.materialCode).length
+          return { rowSpan: isFirstRow ? rowCount : 0 }
+        },
+      },
+      {
+        title: '采购在途',
+        dataIndex: 'purchaseInTransit',
+        key: 'purchaseInTransit',
+        width: getColumnWidth('purchaseInTransit', 100, mainColumnWidths),
+        align: 'right',
+        onCell: (record, index) => {
+          if (index === undefined) return {}
+          const isFirstRow = index === 0 || transformedMaterialData[index - 1]?.materialCode !== record.materialCode
+          const rowCount = transformedMaterialData.filter(item => item.materialCode === record.materialCode).length
+          return { rowSpan: isFirstRow ? rowCount : 0 }
+        },
+      },
+      {
+        title: '生产在制',
+        dataIndex: 'productionWip',
+        key: 'productionWip',
+        width: getColumnWidth('productionWip', 100, mainColumnWidths),
+        align: 'right',
+        onCell: (record, index) => {
+          if (index === undefined) return {}
+          const isFirstRow = index === 0 || transformedMaterialData[index - 1]?.materialCode !== record.materialCode
+          const rowCount = transformedMaterialData.filter(item => item.materialCode === record.materialCode).length
+          return { rowSpan: isFirstRow ? rowCount : 0 }
+        },
+      },
+      {
+        title: '生产待领',
+        dataIndex: 'productionPendingPick',
+        key: 'productionPendingPick',
+        width: getColumnWidth('productionPendingPick', 100, mainColumnWidths),
+        align: 'right',
+        onCell: (record, index) => {
+          if (index === undefined) return {}
+          const isFirstRow = index === 0 || transformedMaterialData[index - 1]?.materialCode !== record.materialCode
+          const rowCount = transformedMaterialData.filter(item => item.materialCode === record.materialCode).length
+          return { rowSpan: isFirstRow ? rowCount : 0 }
         },
       },
     ]
@@ -1222,16 +1353,15 @@ const MaterialControlWorkbench: React.FC = () => {
     message.success('刷新成功')
   }
 
-  const handleShortageRelease = () => {
-    message.info('缺料下发功能')
-  }
-
   const handleSupplyDemandSettings = () => {
     message.info('供需设置功能')
   }
 
   const handleSupplyDemandConfig = () => {
-    message.info('供需设置配置')
+    const lastRule = loadLastRule()
+    setSupplyRule(lastRule)
+    supplyRuleForm.setFieldsValue(lastRule)
+    setSupplyRuleModalOpen(true)
   }
 
   const handleRowClick = (record: MaterialItem) => {
@@ -1261,7 +1391,27 @@ const MaterialControlWorkbench: React.FC = () => {
         .map(item => item.materialCode)
     )
     message.info(`${operation}，已选择 ${selectedMaterials.size} 个物料`)
-    // 这里可以添加实际的批量操作逻辑
+  }, [selectedRowKeys, transformedMaterialData])
+
+  const handleBatchExport = useCallback(() => {
+    const hasSelection = selectedRowKeys.length > 0
+    const exportRows = hasSelection
+      ? transformedMaterialData.filter(item => selectedRowKeys.includes(item.rowKey || ''))
+      : transformedMaterialData
+
+    if (exportRows.length === 0) {
+      message.warning('暂无可导出的供需数据')
+      return
+    }
+
+    const materialCount = new Set(exportRows.map(item => item.materialCode)).size
+
+    if (hasSelection) {
+      message.success(`已导出 ${materialCount} 个已选物料的供需数据`)
+      return
+    }
+
+    message.success(`已导出全部 ${materialCount} 个物料的供需数据`)
   }, [selectedRowKeys, transformedMaterialData])
 
   // 处理明细表格高度拖拽
@@ -1416,32 +1566,25 @@ const MaterialControlWorkbench: React.FC = () => {
         <div className="toolbar-buttons">
           {selectedRowKeys.length > 0 ? (
             <>
-              <span className="selected-count">
-                已选择 {selectedMaterialCount} 个物料
-              </span>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => handleBatchOperation('批量缺料下发')}
-              >
-                批量缺料下发
-              </Button>
-              <Button
-                onClick={() => setSelectedRowKeys([])}
-              >
+              <div className="toolbar-batch-left">
+                <span className="selected-count">
+                  已选择 {selectedMaterialCount} 个物料
+                </span>
+                <Button onClick={handleBatchExport}>导出</Button>
+                <Button onClick={() => handleBatchOperation('下发生产')}>
+                  下发生产
+                </Button>
+                <Button onClick={() => handleBatchOperation('下发采购')}>
+                  下发采购
+                </Button>
+              </div>
+              <Button type="text" className="toolbar-cancel-select" onClick={() => setSelectedRowKeys([])}>
                 取消选择
               </Button>
             </>
           ) : (
             <>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={handleShortageRelease}
-              >
-                缺料下发
-              </Button>
-              <span className="toolbar-separator" />
+              <Button onClick={handleBatchExport}>导出</Button>
               <Button type="text" icon={<ToolOutlined />} onClick={handleSupplyDemandConfig}>
                 供需设置
               </Button>
@@ -1549,6 +1692,319 @@ const MaterialControlWorkbench: React.FC = () => {
           })}
         />
       </Card>
+
+      <Modal
+        title="供需设置 - 预计可用库存"
+        open={supplyRuleModalOpen}
+        onCancel={() => setSupplyRuleModalOpen(false)}
+        onOk={async () => {
+          const values = await supplyRuleForm.validateFields()
+          const next = { ...supplyRule, ...values }
+          setSupplyRule(next)
+          persistLastRule(next)
+          setSupplyRuleModalOpen(false)
+          message.success('已保存供需设置（与需求计算配置保持一致）')
+        }}
+        okText="保存"
+        cancelText="取消"
+        destroyOnClose
+        width={980}
+        className="rule-config-modal"
+      >
+        <Form form={supplyRuleForm} layout="vertical" initialValues={supplyRule}>
+          <div className="rule-config-all">
+            <div className="rule-item">
+              <div className="rule-item-label">说明</div>
+              <div className="rule-item-control">
+                <Typography.Text type="secondary">
+                  与需求计算中「计算规则配置 → 预计可用库存」共用同一套配置，修改后全局生效。
+                </Typography.Text>
+              </div>
+            </div>
+
+            <div className="rule-item">
+                      <div className="rule-item-label">库存数量</div>
+                      <div className="rule-item-control">
+                        <Space size={24} direction="vertical">
+                          <div className="available-stock-item">
+                            <Form.Item name={['availableStockSettings', 'includeOnHand']} valuePropName="checked" noStyle>
+                              <Checkbox>现有库存</Checkbox>
+                            </Form.Item>
+                            <Form.Item noStyle shouldUpdate={(prev, cur) => prev.availableStockSettings?.includeOnHand !== cur.availableStockSettings?.includeOnHand}>
+                              {({ getFieldValue }) => {
+                                const checked = Boolean(getFieldValue(['availableStockSettings', 'includeOnHand']))
+                                if (!checked) return null
+                                return (
+                                  <Space size={8} style={{ marginLeft: 16 }}>
+                                    <Typography.Text type="secondary">排除部分仓库</Typography.Text>
+                                    <Form.Item
+                                      name={['availableStockSettings', 'onHandExcludedWarehouses']}
+                                      noStyle
+                                    >
+                                      <Select
+                                        mode="multiple"
+                                        allowClear
+                                        placeholder="请选择仓库"
+                                        options={WAREHOUSE_OPTIONS}
+                                        style={{ minWidth: 260 }}
+                                      />
+                                    </Form.Item>
+                                  </Space>
+                                )
+                              }}
+                            </Form.Item>
+                          </div>
+                          <div className="available-stock-item">
+                            <Form.Item name={['availableStockSettings', 'includeSafetyStock']} valuePropName="checked" noStyle>
+                              <Checkbox>安全库存</Checkbox>
+                            </Form.Item>
+                          </div>
+                        </Space>
+                      </div>
+                    </div>
+
+                    <div className="rule-item">
+                      <div className="rule-item-label">预计入库</div>
+                      <div className="rule-item-control">
+                        <Space size={24} direction="vertical">
+                          <div className="available-stock-item available-stock-item--with-unapproved">
+                            <Form.Item name={['availableStockSettings', 'expectedIn', 'planNew', 'checked']} valuePropName="checked" noStyle>
+                              <Checkbox
+                                onChange={(e) => {
+                                  supplyRuleForm.setFieldValue(
+                                    ['availableStockSettings', 'expectedIn', 'planNew', 'pendingApproval'],
+                                    e.target.checked
+                                  )
+                                }}
+                              >
+                                计划新增
+                              </Checkbox>
+                            </Form.Item>
+                            <Form.Item noStyle shouldUpdate>
+                              {({ getFieldValue }) => {
+                                const checked = Boolean(getFieldValue(['availableStockSettings', 'expectedIn', 'planNew', 'checked']))
+                                return (
+                                  <Form.Item
+                                    name={['availableStockSettings', 'expectedIn', 'planNew', 'pendingApproval']}
+                                    valuePropName="checked"
+                                    noStyle
+                                  >
+                                    <Checkbox disabled={!checked}>含待审批</Checkbox>
+                                  </Form.Item>
+                                )
+                              }}
+                            </Form.Item>
+                          </div>
+
+                          <div className="available-stock-item available-stock-item--with-unapproved">
+                            <Form.Item name={['availableStockSettings', 'expectedIn', 'purchaseInTransit', 'checked']} valuePropName="checked" noStyle>
+                              <Checkbox
+                                onChange={(e) => {
+                                  supplyRuleForm.setFieldValue(
+                                    ['availableStockSettings', 'expectedIn', 'purchaseInTransit', 'pendingApproval'],
+                                    e.target.checked
+                                  )
+                                }}
+                              >
+                                采购在途
+                              </Checkbox>
+                            </Form.Item>
+                            <Form.Item noStyle shouldUpdate>
+                              {({ getFieldValue }) => {
+                                const checked = Boolean(getFieldValue(['availableStockSettings', 'expectedIn', 'purchaseInTransit', 'checked']))
+                                return (
+                                  <Form.Item
+                                    name={['availableStockSettings', 'expectedIn', 'purchaseInTransit', 'pendingApproval']}
+                                    valuePropName="checked"
+                                    noStyle
+                                  >
+                                    <Checkbox disabled={!checked}>含待审批</Checkbox>
+                                  </Form.Item>
+                                )
+                              }}
+                            </Form.Item>
+                          </div>
+
+                          <div className="available-stock-item available-stock-item--with-unapproved">
+                            <Form.Item name={['availableStockSettings', 'expectedIn', 'productionWip', 'checked']} valuePropName="checked" noStyle>
+                              <Checkbox
+                                onChange={(e) => {
+                                  supplyRuleForm.setFieldValue(
+                                    ['availableStockSettings', 'expectedIn', 'productionWip', 'notStarted'],
+                                    e.target.checked
+                                  )
+                                }}
+                              >
+                                生产在制
+                              </Checkbox>
+                            </Form.Item>
+                            <Form.Item noStyle shouldUpdate>
+                              {({ getFieldValue }) => {
+                                const checked = Boolean(getFieldValue(['availableStockSettings', 'expectedIn', 'productionWip', 'checked']))
+                                return (
+                                  <Form.Item
+                                    name={['availableStockSettings', 'expectedIn', 'productionWip', 'notStarted']}
+                                    valuePropName="checked"
+                                    noStyle
+                                  >
+                                    <Checkbox disabled={!checked}>含未开始</Checkbox>
+                                  </Form.Item>
+                                )
+                              }}
+                            </Form.Item>
+                          </div>
+                        </Space>
+                      </div>
+                    </div>
+
+                    <div className="rule-item">
+                      <div className="rule-item-label">预计出库</div>
+                      <div className="rule-item-control">
+                        <Space size={24} direction="vertical">
+                          <div className="available-stock-item available-stock-item--with-unapproved">
+                            <Form.Item name={['availableStockSettings', 'expectedOut', 'salesPendingIssue', 'checked']} valuePropName="checked" noStyle>
+                              <Checkbox
+                                onChange={(e) => {
+                                  supplyRuleForm.setFieldValue(
+                                    ['availableStockSettings', 'expectedOut', 'salesPendingIssue', 'pendingApproval'],
+                                    e.target.checked
+                                  )
+                                }}
+                              >
+                                销售待发
+                              </Checkbox>
+                            </Form.Item>
+                            <Form.Item noStyle shouldUpdate>
+                              {({ getFieldValue }) => {
+                                const checked = Boolean(getFieldValue(['availableStockSettings', 'expectedOut', 'salesPendingIssue', 'checked']))
+                                return (
+                                  <Form.Item
+                                    name={['availableStockSettings', 'expectedOut', 'salesPendingIssue', 'pendingApproval']}
+                                    valuePropName="checked"
+                                    noStyle
+                                  >
+                                    <Checkbox disabled={!checked}>含待审批</Checkbox>
+                                  </Form.Item>
+                                )
+                              }}
+                            </Form.Item>
+                            <Typography.Text type="secondary" style={{ marginLeft: 32 }}>
+                              销售占用仅考虑已计算过的销售订单。
+                            </Typography.Text>
+                          </div>
+
+                          <div className="available-stock-item available-stock-item--with-unapproved">
+                            <Form.Item name={['availableStockSettings', 'expectedOut', 'planPendingPick', 'checked']} valuePropName="checked" noStyle>
+                              <Checkbox
+                                onChange={(e) => {
+                                  supplyRuleForm.setFieldValue(
+                                    ['availableStockSettings', 'expectedOut', 'planPendingPick', 'pendingApproval'],
+                                    e.target.checked
+                                  )
+                                }}
+                              >
+                                计划待领
+                              </Checkbox>
+                            </Form.Item>
+                            <Form.Item noStyle shouldUpdate>
+                              {({ getFieldValue }) => {
+                                const checked = Boolean(getFieldValue(['availableStockSettings', 'expectedOut', 'planPendingPick', 'checked']))
+                                return (
+                                  <Form.Item
+                                    name={['availableStockSettings', 'expectedOut', 'planPendingPick', 'pendingApproval']}
+                                    valuePropName="checked"
+                                    noStyle
+                                  >
+                                    <Checkbox disabled={!checked}>含待审批</Checkbox>
+                                  </Form.Item>
+                                )
+                              }}
+                            </Form.Item>
+                          </div>
+
+                          <div className="available-stock-item available-stock-item--with-unapproved">
+                            <Form.Item name={['availableStockSettings', 'expectedOut', 'productionPendingPick', 'checked']} valuePropName="checked" noStyle>
+                              <Checkbox
+                                onChange={(e) => {
+                                  supplyRuleForm.setFieldValue(
+                                    ['availableStockSettings', 'expectedOut', 'productionPendingPick', 'notStarted'],
+                                    e.target.checked
+                                  )
+                                }}
+                              >
+                                生产待领
+                              </Checkbox>
+                            </Form.Item>
+                            <Form.Item noStyle shouldUpdate>
+                              {({ getFieldValue }) => {
+                                const checked = Boolean(getFieldValue(['availableStockSettings', 'expectedOut', 'productionPendingPick', 'checked']))
+                                return (
+                                  <Form.Item
+                                    name={['availableStockSettings', 'expectedOut', 'productionPendingPick', 'notStarted']}
+                                    valuePropName="checked"
+                                    noStyle
+                                  >
+                                    <Checkbox disabled={!checked}>含未开始</Checkbox>
+                                  </Form.Item>
+                                )
+                              }}
+                            </Form.Item>
+                          </div>
+                        </Space>
+                        <Form.Item noStyle shouldUpdate>
+                          {({ getFieldValue }) => {
+                            const settings = (getFieldValue('availableStockSettings') || {}) as DemandCalcRule['availableStockSettings']
+
+                            const plusParts: string[] = []
+                            const minusParts: string[] = []
+
+                            if (settings.includeOnHand) plusParts.push('现有库存')
+                            if (settings.includeSafetyStock) minusParts.push('安全库存')
+
+                            if (settings.expectedIn?.planNew?.checked) {
+                              plusParts.push(`计划新增${settings.expectedIn.planNew.pendingApproval ? '(含待审批)' : ''}`)
+                            }
+                            if (settings.expectedIn?.purchaseInTransit?.checked) {
+                              plusParts.push(`采购在途${settings.expectedIn.purchaseInTransit.pendingApproval ? '(含待审批)' : ''}`)
+                            }
+                            if (settings.expectedIn?.productionWip?.checked) {
+                              plusParts.push(`生产在制${settings.expectedIn.productionWip.notStarted ? '(含未开始)' : ''}`)
+                            }
+
+                            if (settings.expectedOut?.salesPendingIssue?.checked) {
+                              minusParts.push(`销售待发${settings.expectedOut.salesPendingIssue.pendingApproval ? '(含待审批)' : ''}`)
+                            }
+                            if (settings.expectedOut?.planPendingPick?.checked) {
+                              minusParts.push(`计划待领${settings.expectedOut.planPendingPick.pendingApproval ? '(含待审批)' : ''}`)
+                            }
+                            if (settings.expectedOut?.productionPendingPick?.checked) {
+                              minusParts.push(`生产待领${settings.expectedOut.productionPendingPick.notStarted ? '(含未开始)' : ''}`)
+                            }
+
+                            return (
+                              <div className="available-stock-formula">
+                                <div className="available-stock-formula-label">预计可用库存计算口径</div>
+                                <div className="available-stock-formula-row">
+                                  <span className="available-stock-formula-row-label">加：</span>
+                                  <span className="available-stock-formula-row-value">
+                                    {plusParts.length ? plusParts.join(' + ') : '无'}
+                                  </span>
+                                </div>
+                                <div className="available-stock-formula-row">
+                                  <span className="available-stock-formula-row-label">减：</span>
+                                  <span className="available-stock-formula-row-value">
+                                    {minusParts.length ? minusParts.join(' + ') : '无'}
+                                  </span>
+                                </div>
+                              </div>
+                            )
+                          }}
+                        </Form.Item>
+                      </div>
+                    </div>
+          </div>
+        </Form>
+      </Modal>
 
       {selectedMaterial && (
         <>
