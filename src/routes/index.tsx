@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Layout from '@/components/Layout'
 import MaterialControlWorkbench from '@/pages/MaterialControlWorkbench'
 import PurchasePlan from '@/pages/PurchasePlan'
@@ -14,7 +14,7 @@ function AppRoutes() {
     <BrowserRouter>
       <Layout>
         <Routes>
-          <Route path={ROUTES.HOME} element={<MaterialControlWorkbench />} />
+          <Route path={ROUTES.HOME} element={<Navigate to={ROUTES.SALES_DETAIL} replace />} />
           <Route path={ROUTES.MATERIAL_CONTROL} element={<MaterialControlWorkbench />} />
           <Route path={ROUTES.PLAN_ORDER_PURCHASE} element={<PurchasePlan />} />
           <Route path={ROUTES.PLAN_ORDER_PRODUCTION} element={<ProductionPlan />} />
@@ -22,7 +22,7 @@ function AppRoutes() {
           <Route path={ROUTES.PLAN_DEMAND_CALCULATION} element={<DemandCalculation />} />
           <Route path={ROUTES.SALES_ORDER} element={<SalesOrder />} />
           <Route path={ROUTES.SALES_DETAIL} element={<SalesDetail />} />
-          <Route path="*" element={<MaterialControlWorkbench />} />
+          <Route path="*" element={<Navigate to={ROUTES.SALES_DETAIL} replace />} />
         </Routes>
       </Layout>
     </BrowserRouter>
